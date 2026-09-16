@@ -348,9 +348,7 @@
                 <h2>ადმინისტრატორის პანელი</h2>
                 <button onclick="toggleAdminModal(false)">დახურვა</button>
             </div>
-            <div id="adminRequestsList">
-                <!-- Requests injected via JS -->
-            </div>
+            <div id="adminRequestsList"></div>
         </div>
     </div>
 
@@ -412,22 +410,8 @@
     </div>
 
     <script>
-        // Mock 4.7M Database sample snippet provided by user for demonstration and local matching
-        const mockDatabase = [
-            { piadi: "03001003199", gvari: "tyemalaZe", saxeli: "Savleg", mamis_saxeli: "elberdi", sqesi: "1.0", dab_weli: "1973-09-26 00:00:00", quca: "adigeni s. didi smada" },
-            { piadi: "03001003201", gvari: "CilingaraSvili", saxeli: "Tamazi", mamis_saxeli: "None", sqesi: "1.0", dab_weli: "1984-07-22 00:00:00", quca: "adigeni s. arali" },
-            { piadi: "03001003202", gvari: "obolaSvili", saxeli: "giorgi", mamis_saxeli: "nodari", sqesi: "1.0", dab_weli: "1983-05-06 00:00:00", quca: "adigeni s. ude" },
-            { piadi: "03001003203", gvari: "TavaZe", saxeli: "maia", mamis_saxeli: "malxazi", sqesi: "2.0", dab_weli: "1982-05-26 00:00:00", quca: "adigeni d. abasTumani l.asaTianis q. N 6" },
-            { piadi: "03001003204", gvari: "gorgoZe", saxeli: "paata", mamis_saxeli: "None", sqesi: "1.0", dab_weli: "1961-07-30 00:00:00", quca: "adigeni s. xevaSeni" },
-            { piadi: "03001003205", gvari: "balaxaSvili", saxeli: "giorgi", mamis_saxeli: "petre", sqesi: "1.0", dab_weli: "1949-06-07 00:00:00", quca: "rusTavi VII m/r kor. 13 b. 67" },
-            { piadi: "03001003206", gvari: "ambarcumian", saxeli: "avetis", mamis_saxeli: "andranikis", sqesi: "1.0", dab_weli: "1931-10-19 00:00:00", quca: "adigeni d. abasTumani S.rusTavelis q. N 20" },
-            { piadi: "03001003207", gvari: "mecxvariSvili", saxeli: "maka", mamis_saxeli: "None", sqesi: "2.0", dab_weli: "1979-03-02 00:00:00", quca: "adigeni s. arali" },
-            { piadi: "03001003208", gvari: "barbliSvili", saxeli: "nino", mamis_saxeli: "nodari", sqesi: "2.0", dab_weli: "1983-04-15 00:00:00", quca: "adigeni s. kaxareTi" },
-            { piadi: "03001003209", gvari: "saginaZe", saxeli: "mzia", mamis_saxeli: "Tengizi", sqesi: "2.0", dab_weli: "1981-08-27 00:00:00", quca: "adigeni s. ijareTi" },
-            { piadi: "03001003210", gvari: "xarabaZe", saxeli: "Teimuraz", mamis_saxeli: "leri", sqesi: "1.0", dab_weli: "1984-06-07 00:00:00", quca: "adigeni s. samyuri" },
-            { piadi: "03001003211", gvari: "qafianiZe", saxeli: "paata", mamis_saxeli: "daviTi", sqesi: "1.0", dab_weli: "1981-04-28 00:00:00", quca: "adigeni s. Wela" },
-            { piadi: "03001003212", gvari: "quTaTelaZe", saxeli: "gurami", mamis_saxeli: "oTari", sqesi: "1.0", dab_weli: "1953-11-21 00:00:00", quca: "adigeni d. abasTumani l.asaTianis q. N 9" }
-        ];
+        // Google Apps Script Web App URL
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1CWkEEqrxN-9aZJwonrQB6S90Ol9Tq47dH3J-e9hW7Dp9xC81qxrrSxsIlSBEMFWe/exec";
 
         // State Management
         let currentUser = JSON.parse(localStorage.getItem('dark_current_user')) || null;
@@ -502,10 +486,9 @@
         function updateUIState() {
             if (!currentUser) return;
             if (currentUser.isAdmin) {
-                document.getElementById('userBalanceDisplay.innerText' || 'userBalanceDisplay').innerText = "ადმინისტრატორი (უსასრულო ძიება)";
+                document.getElementById('userBalanceDisplay').innerText = "ადმინისტრატორი (უსასრულო ძიება)";
                 document.getElementById('adminPanelBtn').classList.remove('hidden');
             } else {
-                // Sync balance
                 if(usersDB[currentUser.username]) {
                     currentUser.searchesLeft = usersDB[currentUser.username].searchesLeft;
                 }
@@ -528,7 +511,7 @@
         function copyIBAN() {
             const iban = document.getElementById('ibanText').innerText;
             navigator.clipboard.writeText(iban);
-            alert("ანგარიშის ნომერი დაკოპირდა буфер-ში!");
+            alert("ანგარიშის ნომერი დაკოპირდა!");
         }
 
         function submitPurchase() {
@@ -545,7 +528,7 @@
                 username: currentUser.username,
                 packageCount: pkg,
                 payerName: payer,
-                status: 'pending' // pending, approved, rejected
+                status: 'pending'
             };
 
             requestsDB.push(request);
@@ -555,18 +538,17 @@
             document.getElementById('payerNameInput').value = '';
         }
 
-        // Search Logic
-        function performSearch() {
+        // Search Logic fetching from Google Drive via Apps Script
+        async function performSearch() {
             if (!currentUser) return;
 
-            // Check if at least one field is filled
-            const saxeli = document.getElementById('searchSaxeli').value.trim().toLowerCase();
-            const gvari = document.getElementById('searchGvari').value.trim().toLowerCase();
-            const mamis = document.getElementById('searchMamisSaxeli').value.trim().toLowerCase();
+            const saxeli = document.getElementById('searchSaxeli').value.trim();
+            const gvari = document.getElementById('searchGvari').value.trim();
+            const mamis = document.getElementById('searchMamisSaxeli').value.trim();
             const piadi = document.getElementById('searchPiadi').value.trim();
             const sqesi = document.getElementById('searchSqesi').value.trim();
             const dabWeli = document.getElementById('searchDabWeli').value.trim();
-            const quca = document.getElementById('searchQuca').value.trim().toLowerCase();
+            const quca = document.getElementById('searchQuca').value.trim();
 
             if (!saxeli && !gvari && !mamis && !piadi && !sqesi && !dabWeli && !quca) {
                 alert("გთხოვთ შეავსოთ მინიმუმ ერთი საძიებო ველი!");
@@ -587,45 +569,79 @@
                 updateUIState();
             }
 
-            // Perform matching against sample base (In production, this queries Google Drive / backend DB)
-            let results = mockDatabase.filter(item => {
-                let match = true;
-                if (saxeli && !item.saxeli.toLowerCase().includes(saxeli)) match = false;
-                if (gvari && !item.gvari.toLowerCase().includes(gvari)) match = false;
-                if (mamis && !item.mamis_saxeli.toLowerCase().includes(mamis)) match = false;
-                if (piadi && !item.piadi.includes(piadi)) match = false;
-                if (sqesi && !item.sqesi.includes(sqesi)) match = false;
-                if (dabWeli && !item.dab_weli.includes(dabWeli)) match = false;
-                if (quca && !item.quca.toLowerCase().includes(quca)) match = false;
-                return match;
-            });
+            const container = document.getElementById('searchResultsContainer');
+            container.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 20px;">მიმდინარეობს ძიება ბაზაში...</div>`;
 
-            // Limit to 50 for normal users, unlimited for admin
-            if (!currentUser.isAdmin && results.length > 50) {
-                results = results.slice(0, 50);
+            try {
+                const params = new URLSearchParams({
+                    saxeli: saxeli,
+                    gvari: gvari,
+                    mamis: mamis,
+                    piadi: piadi,
+                    sqesi: sqesi,
+                    dabWeli: dabWeli,
+                    quca: quca
+                });
+
+                const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    container.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 20px;">შეცდომა: ${data.error}</div>`;
+                    return;
+                }
+
+                renderResults(data);
+            } catch (err) {
+                container.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 20px;">დაფიქსირდა კავშირის შეცდომა სერვერთან.</div>`;
             }
+        }
 
-            renderResults(results);
+        function parseRawLine(lineStr) {
+            // Parses format like: piadi #:..., gvari:..., saxeli:...
+            let res = { saxeli: '-', gvari: '-', mamis_saxeli: '-', piadi: '-', sqesi: '-', dab_weli: '-', quca: '-' };
+            
+            try {
+                // Simple parsing logic based on labels
+                const parts = lineStr.split(',');
+                parts.forEach(part => {
+                    let sub = part.split(':');
+                    if(sub.length >= 2) {
+                        let key = sub[0].trim().toLowerCase();
+                        let val = sub.slice(1).join(':').trim();
+                        if(key.includes('piadi')) res.piadi = val;
+                        else if(key.includes('gvari')) res.gvari = val;
+                        else if(key.includes('saxeli') && !key.includes('mamis')) res.saxeli = val;
+                        else if(key.includes('mamis')) res.mamis_saxeli = val;
+                        else if(key.includes('sqesi')) res.sqesi = val;
+                        else if(key.includes('dab')) res.dab_weli = val;
+                        else if(key.includes('quca')) res.quca = val;
+                    }
+                });
+            } catch(e) {}
+            
+            return res;
         }
 
         function renderResults(results) {
             const container = document.getElementById('searchResultsContainer');
-            if (results.length === 0) {
+            if (!results || results.length === 0) {
                 container.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 20px;">მონაცემები ვერ მოიძებნა.</div>`;
                 return;
             }
 
             let html = '';
-            results.forEach(res => {
+            results.forEach(item => {
+                let parsed = parseRawLine(item.info);
                 html += `
                     <div class="result-card">
-                        <div class="result-item"><label>სახელი</label><span>${res.saxeli}</span></div>
-                        <div class="result-item"><label>გვარი</label><span>${res.gvari}</span></div>
-                        <div class="result-item"><label>მამის სახელი</label><span>${res.mamis_saxeli}</span></div>
-                        <div class="result-item"><label>პირადი ნომერი</label><span>${res.piadi}</span></div>
-                        <div class="result-item"><label>სქესი</label><span>${res.sqesi}</span></div>
-                        <div class="result-item"><label>დაბ. თარიღი</label><span>${res.dab_weli}</span></div>
-                        <div class="result-item" style="grid-column: span 2;"><label>საცხოვრებელი</label><span>${res.quca}</span></div>
+                        <div class="result-item"><label>სახელი</label><span>${parsed.saxeli}</span></div>
+                        <div class="result-item"><label>გვარი</label><span>${parsed.gvari}</span></div>
+                        <div class="result-item"><label>მამის სახელი</label><span>${parsed.mamis_saxeli}</span></div>
+                        <div class="result-item"><label>პირადი ნომერი</label><span>${parsed.piadi}</span></div>
+                        <div class="result-item"><label>სქესი</label><span>${parsed.sqesi}</span></div>
+                        <div class="result-item"><label>დაბ. თარიღი</label><span>${parsed.dab_weli}</span></div>
+                        <div class="result-item" style="grid-column: span 2;"><label>საცხოვრებელი</label><span>${parsed.quca}</span></div>
                     </div>
                 `;
             });
