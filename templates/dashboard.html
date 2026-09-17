@@ -1,1024 +1,1002 @@
 <!DOCTYPE html>
+
 <html lang="ka">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-    <title>DarkSearch | Dashboard</title>
+```
+<title>DarkSearch | Dashboard</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --gold: #d4af37;
+        --gold-light: #f5d76e;
+        --gold-dark: #8f6f18;
+        --bg: #030303;
+        --border: rgba(255,255,255,.07);
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: #f5f5f5;
+
+        background:
+            radial-gradient(
+                circle at 10% 10%,
+                rgba(212,175,55,.08),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 90% 80%,
+                rgba(212,175,55,.06),
+                transparent 30%
+            ),
+            #030303;
+
+        overflow-x: hidden;
+    }
+
+    /* =========================
+       BACKGROUND
+    ========================= */
+
+    .background {
+        position: fixed;
+        inset: 0;
+        z-index: -10;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .grid {
+        position: absolute;
+        inset: 0;
+        opacity: .10;
+
+        background-image:
+            linear-gradient(
+                rgba(212,175,55,.08) 1px,
+                transparent 1px
+            ),
+            linear-gradient(
+                90deg,
+                rgba(212,175,55,.08) 1px,
+                transparent 1px
+            );
+
+        background-size: 65px 65px;
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: .15;
+        animation: floating 12s ease-in-out infinite;
+    }
+
+    .orb.one {
+        width: 350px;
+        height: 350px;
+        top: -150px;
+        left: -120px;
+        background: #d4af37;
+    }
+
+    .orb.two {
+        width: 330px;
+        height: 330px;
+        right: -150px;
+        bottom: -130px;
+        background: #8f6f18;
+        animation-delay: -5s;
+    }
+
+    .orb.three {
+        width: 180px;
+        height: 180px;
+        left: 48%;
+        top: 30%;
+        background: #f5d76e;
+        opacity: .045;
+        animation-delay: -8s;
+    }
+
+    @keyframes floating {
+        0%, 100% {
+            transform: translate3d(0,0,0);
         }
 
-        :root {
-            --gold: #d4af37;
-            --gold-light: #f5d76e;
-            --gold-dark: #8f6f18;
-            --bg: #030303;
-            --card: rgba(15, 15, 15, .82);
-            --border: rgba(255,255,255,.07);
-            --muted: #777;
+        50% {
+            transform: translate3d(35px,-25px,0);
+        }
+    }
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+
+        width: 100%;
+
+        border-bottom:
+            1px solid
+            rgba(255,255,255,.06);
+
+        background:
+            rgba(3,3,3,.78);
+
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+    }
+
+    .nav-inner {
+        max-width: 1180px;
+        margin: auto;
+
+        min-height: 76px;
+        padding: 0 22px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+
+        color: white;
+        text-decoration: none;
+    }
+
+    .brand-icon {
+        width: 39px;
+        height: 39px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 11px;
+
+        color: #080808;
+
+        font-family: "Orbitron", sans-serif;
+        font-size: 11px;
+        font-weight: 900;
+
+        background:
+            linear-gradient(
+                135deg,
+                #fff1a8,
+                #d4af37,
+                #8f6f18
+            );
+
+        box-shadow:
+            0 0 25px
+            rgba(212,175,55,.13);
+    }
+
+    .brand-name {
+        font-family: "Orbitron", sans-serif;
+
+        font-size: 15px;
+        font-weight: 800;
+
+        letter-spacing: 1.4px;
+    }
+
+    .brand-name span {
+        color: var(--gold);
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 9px 13px;
+
+        border: 1px solid var(--border);
+        border-radius: 11px;
+
+        background:
+            rgba(255,255,255,.025);
+
+        color: #bcbcbc;
+
+        font-size: 12px;
+    }
+
+    .user-dot {
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: #d4af37;
+
+        box-shadow:
+            0 0 9px
+            rgba(212,175,55,.8);
+    }
+
+    .logout {
+        padding: 9px 13px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.07);
+
+        border-radius: 11px;
+
+        color: #888;
+
+        text-decoration: none;
+
+        font-size: 12px;
+        font-weight: 600;
+
+        background:
+            rgba(255,255,255,.02);
+
+        transition: .25s ease;
+    }
+
+    .logout:hover {
+        color: #fff;
+
+        border-color:
+            rgba(212,175,55,.25);
+
+        background:
+            rgba(212,175,55,.05);
+    }
+
+    /* =========================
+       CONTAINER
+    ========================= */
+
+    .container {
+        width: 100%;
+        max-width: 1180px;
+
+        margin: auto;
+
+        padding:
+            45px 22px 70px;
+    }
+
+    /* =========================
+       WELCOME
+    ========================= */
+
+    .welcome {
+        margin-bottom: 30px;
+    }
+
+    .welcome-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        margin-bottom: 13px;
+
+        color: var(--gold-light);
+
+        font-size: 11px;
+        font-weight: 700;
+
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+    }
+
+    .welcome-label::before {
+        content: "";
+
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: var(--gold);
+
+        box-shadow:
+            0 0 10px
+            rgba(212,175,55,.7);
+    }
+
+    .welcome h1 {
+        font-family: "Orbitron", sans-serif;
+
+        font-size: clamp(25px, 4vw, 39px);
+
+        line-height: 1.2;
+
+        letter-spacing: -.5px;
+    }
+
+    .welcome h1 span {
+        color: var(--gold);
+    }
+
+    .welcome p {
+        max-width: 650px;
+
+        margin-top: 11px;
+
+        color: #777;
+
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    /* =========================
+       STATS
+    ========================= */
+
+    .stats {
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 16px;
+
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        position: relative;
+
+        padding: 23px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.07);
+
+        border-radius: 20px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255,255,255,.045),
+                rgba(255,255,255,.015)
+            );
+
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+
+        overflow: hidden;
+
+        transition:
+            transform .3s ease,
+            border-color .3s ease,
+            box-shadow .3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+
+        border-color:
+            rgba(212,175,55,.20);
+
+        box-shadow:
+            0 20px 50px
+            rgba(0,0,0,.35);
+    }
+
+    .stat-card::after {
+        content: "";
+
+        position: absolute;
+
+        width: 100px;
+        height: 100px;
+
+        right: -45px;
+        top: -45px;
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(212,175,55,.10),
+                transparent 70%
+            );
+    }
+
+    .stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .stat-title {
+        color: #777;
+
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 10px;
+
+        color: var(--gold);
+
+        background:
+            rgba(212,175,55,.07);
+
+        border:
+            1px solid
+            rgba(212,175,55,.10);
+    }
+
+    .stat-value {
+        margin-top: 15px;
+
+        font-family: "Orbitron", sans-serif;
+
+        font-size: 25px;
+        font-weight: 700;
+
+        color: #f2f2f2;
+    }
+
+    .stat-description {
+        margin-top: 5px;
+
+        color: #505050;
+
+        font-size: 10px;
+    }
+
+    /* =========================
+       MAIN GRID
+    ========================= */
+
+    .main-grid {
+        display: grid;
+
+        grid-template-columns:
+            1.55fr
+            .85fr;
+
+        gap: 18px;
+    }
+
+    .panel {
+        position: relative;
+
+        padding: 27px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.07);
+
+        border-radius: 22px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(18,18,18,.90),
+                rgba(7,7,7,.90)
+            );
+
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+
+        overflow: hidden;
+    }
+
+    .panel::before {
+        content: "";
+
+        position: absolute;
+
+        width: 200px;
+        height: 200px;
+
+        right: -110px;
+        top: -110px;
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(212,175,55,.08),
+                transparent 70%
+            );
+    }
+
+    .panel-header {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 20px;
+    }
+
+    .panel-title {
+        font-family: "Orbitron", sans-serif;
+
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .panel-subtitle {
+        margin-top: 5px;
+
+        color: #626262;
+
+        font-size: 11px;
+    }
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    .search-card {
+        position: relative;
+
+        min-height: 245px;
+
+        padding: 27px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        border:
+            1px solid
+            rgba(212,175,55,.13);
+
+        border-radius: 19px;
+
+        background:
+            radial-gradient(
+                circle at 80% 20%,
+                rgba(212,175,55,.09),
+                transparent 32%
+            ),
+            rgba(212,175,55,.025);
+
+        overflow: hidden;
+    }
+
+    .search-card::before {
+        content: "";
+
+        position: absolute;
+
+        width: 240px;
+        height: 240px;
+
+        right: -80px;
+        bottom: -140px;
+
+        border-radius: 50%;
+
+        border:
+            1px solid
+            rgba(212,175,55,.10);
+
+        box-shadow:
+            0 0 0 35px
+            rgba(212,175,55,.025),
+            0 0 0 70px
+            rgba(212,175,55,.015);
+    }
+
+    .search-icon {
+        width: 48px;
+        height: 48px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 14px;
+
+        color: #080808;
+
+        font-size: 20px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #fff0a0,
+                #d4af37
+            );
+
+        box-shadow:
+            0 10px 30px
+            rgba(212,175,55,.13);
+    }
+
+    .search-card h2 {
+        position: relative;
+
+        margin-top: 18px;
+
+        font-size: 21px;
+    }
+
+    .search-card p {
+        position: relative;
+
+        max-width: 500px;
+
+        margin-top: 8px;
+
+        color: #777;
+
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .search-button {
+        position: relative;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        width: fit-content;
+
+        margin-top: 22px;
+        padding: 13px 21px;
+
+        border-radius: 12px;
+
+        color: #080808;
+
+        text-decoration: none;
+
+        font-size: 12px;
+        font-weight: 800;
+
+        background:
+            linear-gradient(
+                135deg,
+                #fff0a0,
+                #d4af37,
+                #967219
+            );
+
+        box-shadow:
+            0 10px 25px
+            rgba(212,175,55,.12);
+
+        transition: .25s ease;
+    }
+
+    .search-button:hover {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 17px 35px
+            rgba(212,175,55,.22);
+    }
+
+    /* =========================
+       ACTIONS
+    ========================= */
+
+    .actions {
+        display: grid;
+        gap: 11px;
+    }
+
+    .action {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+
+        padding: 14px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.06);
+
+        border-radius: 14px;
+
+        color: white;
+
+        text-decoration: none;
+
+        background:
+            rgba(255,255,255,.025);
+
+        transition: .25s ease;
+    }
+
+    .action:hover {
+        transform: translateX(4px);
+
+        border-color:
+            rgba(212,175,55,.18);
+
+        background:
+            rgba(212,175,55,.04);
+    }
+
+    .action-icon {
+        width: 38px;
+        height: 38px;
+
+        flex-shrink: 0;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 11px;
+
+        color: var(--gold);
+
+        background:
+            rgba(212,175,55,.06);
+    }
+
+    .action-content strong {
+        display: block;
+        font-size: 12px;
+    }
+
+    .action-content span {
+        display: block;
+
+        margin-top: 3px;
+
+        color: #5f5f5f;
+
+        font-size: 10px;
+    }
+
+    .arrow {
+        margin-left: auto;
+
+        color: #555;
+
+        transition: .2s ease;
+    }
+
+    .action:hover .arrow {
+        color: var(--gold);
+        transform: translateX(3px);
+    }
+
+    /* =========================
+       ADMIN
+    ========================= */
+
+    .admin-panel {
+        margin-top: 18px;
+
+        padding: 20px;
+
+        border:
+            1px solid
+            rgba(212,175,55,.13);
+
+        border-radius: 18px;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(212,175,55,.055),
+                rgba(255,255,255,.018)
+            );
+    }
+
+    .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+
+        color: var(--gold-light);
+
+        font-size: 10px;
+        font-weight: 800;
+
+        letter-spacing: 1px;
+    }
+
+    .admin-badge::before {
+        content: "";
+
+        width: 6px;
+        height: 6px;
+
+        border-radius: 50%;
+
+        background: var(--gold);
+
+        box-shadow:
+            0 0 8px
+            rgba(212,175,55,.8);
+    }
+
+    .admin-panel p {
+        margin-top: 7px;
+
+        color: #666;
+
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .admin-button {
+        display: inline-block;
+
+        margin-top: 13px;
+        padding: 9px 13px;
+
+        border:
+            1px solid
+            rgba(212,175,55,.17);
+
+        border-radius: 9px;
+
+        color: var(--gold-light);
+
+        text-decoration: none;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        background:
+            rgba(212,175,55,.04);
+
+        transition: .2s ease;
+    }
+
+    .admin-button:hover {
+        background:
+            rgba(212,175,55,.09);
+
+        transform: translateY(-1px);
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+        margin-top: 40px;
+
+        padding-top: 20px;
+
+        border-top:
+            1px solid
+            rgba(255,255,255,.05);
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        color: #444;
+
+        font-size: 10px;
+    }
+
+    footer strong {
+        color: #656565;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 850px) {
+
+        .main-grid {
+            grid-template-columns: 1fr;
         }
 
-        html {
-            scroll-behavior: smooth;
+        .stats {
+            grid-template-columns:
+                repeat(3, 1fr);
         }
+    }
 
-        body {
-            min-height: 100vh;
-
-            font-family: "Inter", sans-serif;
-            color: #f5f5f5;
-
-            background:
-                radial-gradient(
-                    circle at 10% 10%,
-                    rgba(212,175,55,.08),
-                    transparent 28%
-                ),
-                radial-gradient(
-                    circle at 90% 80%,
-                    rgba(212,175,55,.06),
-                    transparent 30%
-                ),
-                #030303;
-
-            overflow-x: hidden;
-        }
-
-        /* =========================
-           BACKGROUND
-        ========================= */
-
-        .background {
-            position: fixed;
-            inset: 0;
-
-            z-index: -10;
-
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .grid {
-            position: absolute;
-            inset: 0;
-
-            opacity: .10;
-
-            background-image:
-                linear-gradient(
-                    rgba(212,175,55,.08) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(212,175,55,.08) 1px,
-                    transparent 1px
-                );
-
-            background-size: 65px 65px;
-        }
-
-        .orb {
-            position: absolute;
-
-            border-radius: 50%;
-
-            filter: blur(100px);
-
-            opacity: .15;
-
-            animation:
-                floating 12s ease-in-out infinite;
-        }
-
-        .orb.one {
-            width: 350px;
-            height: 350px;
-
-            top: -150px;
-            left: -120px;
-
-            background: #d4af37;
-        }
-
-        .orb.two {
-            width: 330px;
-            height: 330px;
-
-            right: -150px;
-            bottom: -130px;
-
-            background: #8f6f18;
-
-            animation-delay: -5s;
-        }
-
-        .orb.three {
-            width: 180px;
-            height: 180px;
-
-            left: 48%;
-            top: 30%;
-
-            background: #f5d76e;
-
-            opacity: .045;
-
-            animation-delay: -8s;
-        }
-
-        @keyframes floating {
-            0%, 100% {
-                transform: translate3d(0,0,0);
-            }
-
-            50% {
-                transform: translate3d(35px,-25px,0);
-            }
-        }
-
-        /* =========================
-           NAVBAR
-        ========================= */
-
-        .navbar {
-            position: sticky;
-            top: 0;
-
-            z-index: 100;
-
-            width: 100%;
-
-            border-bottom:
-                1px solid
-                rgba(255,255,255,.06);
-
-            background:
-                rgba(3,3,3,.78);
-
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-        }
+    @media (max-width: 600px) {
 
         .nav-inner {
-            max-width: 1180px;
-
-            margin: auto;
-
-            min-height: 76px;
-
-            padding: 0 22px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-
-            color: white;
-
-            text-decoration: none;
-        }
-
-        .brand-icon {
-            width: 39px;
-            height: 39px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 11px;
-
-            color: #080808;
-
-            font-family: "Orbitron", sans-serif;
-            font-size: 11px;
-            font-weight: 900;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff1a8,
-                    #d4af37,
-                    #8f6f18
-                );
-
-            box-shadow:
-                0 0 25px
-                rgba(212,175,55,.13);
+            min-height: 68px;
+            padding: 0 15px;
         }
 
         .brand-name {
-            font-family: "Orbitron", sans-serif;
-
-            font-size: 15px;
-            font-weight: 800;
-
-            letter-spacing: 1.4px;
-        }
-
-        .brand-name span {
-            color: var(--gold);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 13px;
         }
 
         .user-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            padding: 9px 13px;
-
-            border: 1px solid var(--border);
-            border-radius: 11px;
-
-            background:
-                rgba(255,255,255,.025);
-
-            color: #bcbcbc;
-
-            font-size: 12px;
+            display: none;
         }
-
-        .user-dot {
-            width: 7px;
-            height: 7px;
-
-            border-radius: 50%;
-
-            background: #d4af37;
-
-            box-shadow:
-                0 0 9px
-                rgba(212,175,55,.8);
-        }
-
-        .logout {
-            padding: 9px 13px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.07);
-
-            border-radius: 11px;
-
-            color: #888;
-
-            text-decoration: none;
-
-            font-size: 12px;
-            font-weight: 600;
-
-            background:
-                rgba(255,255,255,.02);
-
-            transition: .25s ease;
-        }
-
-        .logout:hover {
-            color: #fff;
-
-            border-color:
-                rgba(212,175,55,.25);
-
-            background:
-                rgba(212,175,55,.05);
-        }
-
-        /* =========================
-           CONTAINER
-        ========================= */
 
         .container {
-            width: 100%;
-            max-width: 1180px;
-
-            margin: auto;
-
             padding:
-                45px 22px 70px;
+                30px 15px 50px;
         }
-
-        /* =========================
-           WELCOME
-        ========================= */
-
-        .welcome {
-            margin-bottom: 30px;
-        }
-
-        .welcome-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-
-            margin-bottom: 13px;
-
-            color: var(--gold-light);
-
-            font-size: 11px;
-            font-weight: 700;
-
-            letter-spacing: 1.3px;
-            text-transform: uppercase;
-        }
-
-        .welcome-label::before {
-            content: "";
-
-            width: 7px;
-            height: 7px;
-
-            border-radius: 50%;
-
-            background: var(--gold);
-
-            box-shadow:
-                0 0 10px
-                rgba(212,175,55,.7);
-        }
-
-        .welcome h1 {
-            font-family: "Orbitron", sans-serif;
-
-            font-size: clamp(25px, 4vw, 39px);
-
-            line-height: 1.2;
-
-            letter-spacing: -.5px;
-        }
-
-        .welcome h1 span {
-            color: var(--gold);
-        }
-
-        .welcome p {
-            max-width: 650px;
-
-            margin-top: 11px;
-
-            color: #777;
-
-            font-size: 13px;
-            line-height: 1.7;
-        }
-
-        /* =========================
-           STAT CARDS
-        ========================= */
 
         .stats {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 16px;
-
-            margin-bottom: 25px;
+            grid-template-columns: 1fr;
+            gap: 10px;
         }
 
         .stat-card {
-            position: relative;
-
-            padding: 23px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.07);
-
-            border-radius: 20px;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(255,255,255,.045),
-                    rgba(255,255,255,.015)
-                );
-
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-
-            overflow: hidden;
-
-            transition:
-                transform .3s ease,
-                border-color .3s ease,
-                box-shadow .3s ease;
-        }
-
-        .stat-card:hover {
-            transform:
-                translateY(-5px);
-
-            border-color:
-                rgba(212,175,55,.20);
-
-            box-shadow:
-                0 20px 50px
-                rgba(0,0,0,.35);
-        }
-
-        .stat-card::after {
-            content: "";
-
-            position: absolute;
-
-            width: 100px;
-            height: 100px;
-
-            right: -45px;
-            top: -45px;
-
-            border-radius: 50%;
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(212,175,55,.10),
-                    transparent 70%
-                );
-        }
-
-        .stat-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stat-title {
-            color: #777;
-
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .stat-icon {
-            width: 35px;
-            height: 35px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 10px;
-
-            color: var(--gold);
-
-            background:
-                rgba(212,175,55,.07);
-
-            border:
-                1px solid
-                rgba(212,175,55,.10);
+            padding: 18px;
         }
 
         .stat-value {
-            margin-top: 15px;
-
-            font-family: "Orbitron", sans-serif;
-
-            font-size: 25px;
-            font-weight: 700;
-
-            color: #f2f2f2;
-        }
-
-        .stat-description {
-            margin-top: 5px;
-
-            color: #505050;
-
-            font-size: 10px;
-        }
-
-        /* =========================
-           MAIN GRID
-        ========================= */
-
-        .main-grid {
-            display: grid;
-
-            grid-template-columns:
-                1.55fr
-                .85fr;
-
-            gap: 18px;
+            font-size: 22px;
         }
 
         .panel {
-            position: relative;
-
-            padding: 27px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.07);
-
-            border-radius: 22px;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(18,18,18,.90),
-                    rgba(7,7,7,.90)
-                );
-
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-
-            overflow: hidden;
+            padding: 20px;
         }
-
-        .panel::before {
-            content: "";
-
-            position: absolute;
-
-            width: 200px;
-            height: 200px;
-
-            right: -110px;
-            top: -110px;
-
-            border-radius: 50%;
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(212,175,55,.08),
-                    transparent 70%
-                );
-        }
-
-        .panel-header {
-            position: relative;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            margin-bottom: 20px;
-        }
-
-        .panel-title {
-            font-family: "Orbitron", sans-serif;
-
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .panel-subtitle {
-            margin-top: 5px;
-
-            color: #626262;
-
-            font-size: 11px;
-        }
-
-        /* =========================
-           SEARCH CARD
-        ========================= */
 
         .search-card {
-            position: relative;
-
-            min-height: 245px;
-
-            padding: 27px;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-
-            border:
-                1px solid
-                rgba(212,175,55,.13);
-
-            border-radius: 19px;
-
-            background:
-                radial-gradient(
-                    circle at 80% 20%,
-                    rgba(212,175,55,.09),
-                    transparent 32%
-                ),
-                rgba(212,175,55,.025);
-
-            overflow: hidden;
+            padding: 22px;
         }
-
-        .search-card::before {
-            content: "";
-
-            position: absolute;
-
-            width: 240px;
-            height: 240px;
-
-            right: -80px;
-            bottom: -140px;
-
-            border-radius: 50%;
-
-            border:
-                1px solid
-                rgba(212,175,55,.10);
-
-            box-shadow:
-                0 0 0 35px
-                rgba(212,175,55,.025),
-                0 0 0 70px
-                rgba(212,175,55,.015);
-        }
-
-        .search-icon {
-            width: 48px;
-            height: 48px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 14px;
-
-            color: #080808;
-
-            font-size: 20px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff0a0,
-                    #d4af37
-                );
-
-            box-shadow:
-                0 10px 30px
-                rgba(212,175,55,.13);
-        }
-
-        .search-card h2 {
-            position: relative;
-
-            margin-top: 18px;
-
-            font-size: 21px;
-        }
-
-        .search-card p {
-            position: relative;
-
-            max-width: 500px;
-
-            margin-top: 8px;
-
-            color: #777;
-
-            font-size: 12px;
-            line-height: 1.7;
-        }
-
-        .search-button {
-            position: relative;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            width: fit-content;
-
-            margin-top: 22px;
-            padding: 13px 21px;
-
-            border-radius: 12px;
-
-            color: #080808;
-
-            text-decoration: none;
-
-            font-size: 12px;
-            font-weight: 800;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff0a0,
-                    #d4af37,
-                    #967219
-                );
-
-            box-shadow:
-                0 10px 25px
-                rgba(212,175,55,.12);
-
-            transition: .25s ease;
-        }
-
-        .search-button:hover {
-            transform: translateY(-3px);
-
-            box-shadow:
-                0 17px 35px
-                rgba(212,175,55,.22);
-        }
-
-        /* =========================
-           QUICK ACTIONS
-        ========================= */
-
-        .actions {
-            display: grid;
-
-            gap: 11px;
-        }
-
-        .action {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-
-            padding: 14px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.06);
-
-            border-radius: 14px;
-
-            color: white;
-
-            text-decoration: none;
-
-            background:
-                rgba(255,255,255,.025);
-
-            transition: .25s ease;
-        }
-
-        .action:hover {
-            transform: translateX(4px);
-
-            border-color:
-                rgba(212,175,55,.18);
-
-            background:
-                rgba(212,175,55,.04);
-        }
-
-        .action-icon {
-            width: 38px;
-            height: 38px;
-
-            flex-shrink: 0;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 11px;
-
-            color: var(--gold);
-
-            background:
-                rgba(212,175,55,.06);
-        }
-
-        .action-content strong {
-            display: block;
-
-            font-size: 12px;
-        }
-
-        .action-content span {
-            display: block;
-
-            margin-top: 3px;
-
-            color: #5f5f5f;
-
-            font-size: 10px;
-        }
-
-        .arrow {
-            margin-left: auto;
-
-            color: #555;
-
-            transition: .2s ease;
-        }
-
-        .action:hover .arrow {
-            color: var(--gold);
-            transform: translateX(3px);
-        }
-
-        /* =========================
-           ADMIN
-        ========================= */
-
-        .admin-panel {
-            margin-top: 18px;
-
-            padding: 20px;
-
-            border:
-                1px solid
-                rgba(212,175,55,.13);
-
-            border-radius: 18px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(212,175,55,.055),
-                    rgba(255,255,255,.018)
-                );
-        }
-
-        .admin-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-
-            color: var(--gold-light);
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: 1px;
-        }
-
-        .admin-badge::before {
-            content: "";
-
-            width: 6px;
-            height: 6px;
-
-            border-radius: 50%;
-
-            background: var(--gold);
-
-            box-shadow:
-                0 0 8px
-                rgba(212,175,55,.8);
-        }
-
-        .admin-panel p {
-            margin-top: 7px;
-
-            color: #666;
-
-            font-size: 11px;
-            line-height: 1.6;
-        }
-
-        .admin-button {
-            display: inline-block;
-
-            margin-top: 13px;
-            padding: 9px 13px;
-
-            border:
-                1px solid
-                rgba(212,175,55,.17);
-
-            border-radius: 9px;
-
-            color: var(--gold-light);
-
-            text-decoration: none;
-
-            font-size: 10px;
-            font-weight: 700;
-
-            background:
-                rgba(212,175,55,.04);
-
-            transition: .2s ease;
-        }
-
-        .admin-button:hover {
-            background:
-                rgba(212,175,55,.09);
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
 
         footer {
-            margin-top: 40px;
-
-            padding-top: 20px;
-
-            border-top:
-                1px solid
-                rgba(255,255,255,.05);
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            color: #444;
-
-            font-size: 10px;
+            flex-direction: column;
+            gap: 8px;
         }
+    }
+</style>
+```
 
-        footer strong {
-            color: #656565;
-        }
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 850px) {
-
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                grid-template-columns:
-                    repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-
-            .nav-inner {
-                min-height: 68px;
-                padding: 0 15px;
-            }
-
-            .brand-name {
-                font-size: 13px;
-            }
-
-            .user-pill {
-                display: none;
-            }
-
-            .container {
-                padding:
-                    30px 15px 50px;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 18px;
-            }
-
-            .stat-value {
-                font-size: 22px;
-            }
-
-            .panel {
-                padding: 20px;
-            }
-
-            .search-card {
-                padding: 22px;
-            }
-
-            footer {
-                flex-direction: column;
-                gap: 8px;
-            }
-        }
-    </style>
 </head>
 
 <body>
 
 <div class="background">
     <div class="grid"></div>
-
     <div class="orb one"></div>
     <div class="orb two"></div>
     <div class="orb three"></div>
 </div>
-
 
 <!-- =========================
      NAVBAR
@@ -1026,51 +1004,50 @@
 
 <nav class="navbar">
 
-    <div class="nav-inner">
+```
+<div class="nav-inner">
 
-        <a href="{{ url_for('dashboard') }}" class="brand">
+    <a href="{{ url_for('dashboard') }}" class="brand">
 
-            <div class="brand-icon">
-                DS
-            </div>
+        <div class="brand-icon">
+            DS
+        </div>
 
-            <div class="brand-name">
-                DARK<span>SEARCH</span>
-            </div>
+        <div class="brand-name">
+            DARK<span>SEARCH</span>
+        </div>
 
-        </a>
+    </a>
 
+    <div class="nav-right">
 
-        <div class="nav-right">
+        <div class="user-pill">
 
-            <div class="user-pill">
+            <span class="user-dot"></span>
 
-                <span class="user-dot"></span>
-
-                <span>
-                    {% if user %}
-                        {{ user.username }}
-                    {% else %}
-                        მომხმარებელი
-                    {% endif %}
-                </span>
-
-            </div>
-
-
-            <a
-                href="{{ url_for('logout') }}"
-                class="logout"
-            >
-                გასვლა
-            </a>
+            <span>
+                {% if user %}
+                    {{ user.username }}
+                {% else %}
+                    მომხმარებელი
+                {% endif %}
+            </span>
 
         </div>
 
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout"
+        >
+            გასვლა
+        </a>
+
     </div>
 
-</nav>
+</div>
+```
 
+</nav>
 
 <!-- =========================
      MAIN
@@ -1078,353 +1055,371 @@
 
 <main class="container">
 
+```
+<!-- WELCOME -->
 
-    <!-- WELCOME -->
+<section class="welcome">
 
-    <section class="welcome">
+    <div class="welcome-label">
+        პირადი პანელი
+    </div>
 
-        <div class="welcome-label">
-            პირადი პანელი
-        </div>
+    <h1>
+        მოგესალმები,
+        <span>
+            {% if user %}
+                {{ user.username }}
+            {% else %}
+                User
+            {% endif %}
+        </span>
+    </h1>
 
-        <h1>
-            მოგესალმები,
-            <span>
-                {% if user %}
-                    {{ user.username }}
-                {% else %}
-                    User
-                {% endif %}
-            </span>
-        </h1>
+    <p>
+        მართე შენი ანგარიში, ხელმისაწვდომი ძიებები
+        და სისტემის ფუნქციები ერთი სივრციდან.
+    </p>
 
-        <p>
-            მართე შენი ანგარიში, ხელმისაწვდომი ძიებები
-            და სისტემის ფუნქციები ერთი სივრციდან.
-        </p>
-
-    </section>
-
-
-    <!-- =========================
-         STATS
-    ========================= -->
-
-    <section class="stats">
+</section>
 
 
-        <!-- CREDITS -->
+<!-- =========================
+     STATS
+========================= -->
 
-        <div class="stat-card">
+<section class="stats">
 
-            <div class="stat-top">
+    <!-- CREDITS -->
 
-                <div class="stat-title">
-                    ხელმისაწვდომი ძიებები
-                </div>
+    <div class="stat-card">
 
-                <div class="stat-icon">
-                    ◈
-                </div>
+        <div class="stat-top">
 
+            <div class="stat-title">
+                ხელმისაწვდომი ძიებები
             </div>
 
-            <div class="stat-value">
-
-                {% if user and user.credits is defined %}
-                    {{ user.credits }}
-                {% else %}
-                    0
-                {% endif %}
-
-            </div>
-
-            <div class="stat-description">
-                დარჩენილი ძიებების რაოდენობა
+            <div class="stat-icon">
+                ◈
             </div>
 
         </div>
 
-
-        <!-- ACCOUNT -->
-
-        <div class="stat-card">
-
-            <div class="stat-top">
-
-                <div class="stat-title">
-                    ანგარიშის სტატუსი
-                </div>
-
-                <div class="stat-icon">
-                    ✓
-                </div>
-
-            </div>
-
-            <div class="stat-value"
-                 style="font-size:18px; margin-top:19px;">
-                აქტიური
-            </div>
-
-            <div class="stat-description">
-                ანგარიში ხელმისაწვდომია
-            </div>
-
-        </div>
-
-
-        <!-- ACCESS -->
-
-        <div class="stat-card">
-
-            <div class="stat-top">
-
-                <div class="stat-title">
-                    წვდომა
-                </div>
-
-                <div class="stat-icon">
-                    ◉
-                </div>
-
-            </div>
-
-            <div class="stat-value"
-                 style="font-size:18px; margin-top:19px;">
-
-                {% if user and user.is_admin %}
-                    ADMIN
-                {% else %}
-                    USER
-                {% endif %}
-
-            </div>
-
-            <div class="stat-description">
-                ანგარიშის ტიპი
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================
-         MAIN GRID
-    ========================= -->
-
-    <section class="main-grid">
-
-
-        <!-- SEARCH -->
-
-        <div class="panel">
-
-            <div class="panel-header">
-
-                <div>
-                    <div class="panel-title">
-                        მონაცემთა ძიება
-                    </div>
-
-                    <div class="panel-subtitle">
-                        ავტორიზებული მომხმარებლის სივრცე
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="search-card">
-
-                <div class="search-icon">
-                    ⌕
-                </div>
-
-                <h2>
-                    დაიწყე ძიება
-                </h2>
-
-                <p>
-                    გადადი ძიების გვერდზე და გამოიყენე
-                    შენთვის ხელმისაწვდომი ძიებები.
-                </p>
-
-                <a
-                    href="{{ url_for('search_page') }}"
-                    class="search-button"
-                >
-                    ძიების გახსნა&nbsp; →
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <!-- QUICK ACTIONS -->
-
-        <div class="panel">
-
-            <div class="panel-header">
-
-                <div>
-                    <div class="panel-title">
-                        სწრაფი მოქმედებები
-                    </div>
-
-                    <div class="panel-subtitle">
-                        ანგარიშის მართვა
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="actions">
-
-
-                <!-- SEARCH -->
-                <a
-    href="{{ url_for('search') }}"
-    class="action"
->
-
-                    <div class="action-icon">
-                        ⌕
-                    </div>
-
-                    <div class="action-content">
-
-                        <strong>
-                            ძიება
-                        </strong>
-
-                        <span>
-                            ძიების გვერდზე გადასვლა
-                        </span>
-
-                    </div>
-
-                    <div class="arrow">
-                        →
-                    </div>
-
-                </a>
-
-
-                <!-- PURCHASE -->
-
-                <a
-                    href="{{ url_for('purchase_page') }}"
-                    class="action"
-                >
-
-                    <div class="action-icon">
-                        ◈
-                    </div>
-
-                    <div class="action-content">
-
-                        <strong>
-                            ძიებების შეძენა
-                        </strong>
-
-                        <span>
-                            ხელმისაწვდომი პაკეტები
-                        </span>
-
-                    </div>
-
-                    <div class="arrow">
-                        →
-                    </div>
-
-                </a>
-
-
-                <!-- LOGOUT -->
-
-                <a
-                    href="{{ url_for('logout') }}"
-                    class="action"
-                >
-
-                    <div class="action-icon">
-                        ↪
-                    </div>
-
-                    <div class="action-content">
-
-                        <strong>
-                            ანგარიშიდან გასვლა
-                        </strong>
-
-                        <span>
-                            უსაფრთხოდ გამოსვლა
-                        </span>
-
-                    </div>
-
-                    <div class="arrow">
-                        →
-                    </div>
-
-                </a>
-
-            </div>
-
-
-            <!-- ADMIN -->
-
-            {% if user and user.is_admin %}
-
-            <div class="admin-panel">
-
-                <div class="admin-badge">
-                    ADMIN ACCESS
-                </div>
-
-                <p>
-                    ადმინისტრატორის პანელი ხელმისაწვდომია
-                    ამ ანგარიშისთვის.
-                </p>
-
-                <a
-                    href="{{ url_for('admin_page') }}"
-                    class="admin-button"
-                >
-                    Admin Panel →
-                </a>
-
-            </div>
-
+        <div class="stat-value">
+
+            {% if user and user.credits is defined %}
+                {{ user.credits }}
+            {% else %}
+                0
             {% endif %}
 
         </div>
 
-    </section>
-
-
-    <!-- =========================
-         FOOTER
-    ========================= -->
-
-    <footer>
-
-        <div>
-            © 2026 <strong>DarkSearch</strong>
+        <div class="stat-description">
+            დარჩენილი ძიებების რაოდენობა
         </div>
 
-        <div>
-            Secure Dashboard
+    </div>
+
+
+    <!-- ACCOUNT -->
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <div class="stat-title">
+                ანგარიშის სტატუსი
+            </div>
+
+            <div class="stat-icon">
+                ✓
+            </div>
+
         </div>
 
-    </footer>
+        <div
+            class="stat-value"
+            style="font-size:18px; margin-top:19px;"
+        >
+            აქტიური
+        </div>
+
+        <div class="stat-description">
+            ანგარიში ხელმისაწვდომია
+        </div>
+
+    </div>
+
+
+    <!-- ACCESS -->
+
+    <div class="stat-card">
+
+        <div class="stat-top">
+
+            <div class="stat-title">
+                წვდომა
+            </div>
+
+            <div class="stat-icon">
+                ◉
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            style="font-size:18px; margin-top:19px;"
+        >
+
+            {% if user and user.is_admin %}
+                ADMIN
+            {% else %}
+                USER
+            {% endif %}
+
+        </div>
+
+        <div class="stat-description">
+            ანგარიშის ტიპი
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     MAIN GRID
+========================= -->
+
+<section class="main-grid">
+
+    <!-- SEARCH -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <div class="panel-title">
+                    მონაცემთა ძიება
+                </div>
+
+                <div class="panel-subtitle">
+                    ავტორიზებული მომხმარებლის სივრცე
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="search-card">
+
+            <div class="search-icon">
+                ⌕
+            </div>
+
+            <h2>
+                დაიწყე ძიება
+            </h2>
+
+            <p>
+                გადადი ძიების გვერდზე და გამოიყენე
+                შენთვის ხელმისაწვდომი ფუნქციები.
+            </p>
+
+            <!-- IMPORTANT:
+                 endpoint is "search", not "search_page"
+            -->
+
+            <a
+                href="{{ url_for('search') }}"
+                class="search-button"
+            >
+                ძიების გახსნა&nbsp; →
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- QUICK ACTIONS -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <div class="panel-title">
+                    სწრაფი მოქმედებები
+                </div>
+
+                <div class="panel-subtitle">
+                    ანგარიშის მართვა
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="actions">
+
+            <!-- SEARCH -->
+
+            <a
+                href="{{ url_for('search') }}"
+                class="action"
+            >
+
+                <div class="action-icon">
+                    ⌕
+                </div>
+
+                <div class="action-content">
+
+                    <strong>
+                        ძიება
+                    </strong>
+
+                    <span>
+                        ძიების გვერდზე გადასვლა
+                    </span>
+
+                </div>
+
+                <div class="arrow">
+                    →
+                </div>
+
+            </a>
+
+
+            <!-- PURCHASE -->
+
+            <a
+                href="{{ url_for('purchase_page') }}"
+                class="action"
+            >
+
+                <div class="action-icon">
+                    ◈
+                </div>
+
+                <div class="action-content">
+
+                    <strong>
+                        ძიებების შეძენა
+                    </strong>
+
+                    <span>
+                        ხელმისაწვდომი პაკეტები
+                    </span>
+
+                </div>
+
+                <div class="arrow">
+                    →
+                </div>
+
+            </a>
+
+
+            <!-- LOGOUT -->
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="action"
+            >
+
+                <div class="action-icon">
+                    ↪
+                </div>
+
+                <div class="action-content">
+
+                    <strong>
+                        ანგარიშიდან გასვლა
+                    </strong>
+
+                    <span>
+                        უსაფრთხოდ გამოსვლა
+                    </span>
+
+                </div>
+
+                <div class="arrow">
+                    →
+                </div>
+
+            </a>
+
+        </div>
+
+
+        <!-- =========================
+             ADMIN
+        ========================= -->
+
+        {% if user and user.is_admin %}
+
+        <div class="admin-panel">
+
+            <div class="admin-badge">
+                ADMIN ACCESS
+            </div>
+
+            <p>
+                ადმინისტრატორის პანელი ხელმისაწვდომია
+                ამ ანგარიშისთვის.
+            </p>
+
+            <!--
+                Direct route.
+                This avoids the previous
+                "admin_page" endpoint error.
+            -->
+
+            <a
+                href="/admin"
+                class="admin-button"
+            >
+                Admin Panel →
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div>
+        © 2026 <strong>DarkSearch</strong>
+    </div>
+
+    <div>
+        Secure Dashboard
+    </div>
+
+</footer>
+```
 
 </main>
-
 
 <script>
 
