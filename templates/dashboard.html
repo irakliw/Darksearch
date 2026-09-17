@@ -1,1019 +1,822 @@
 <!DOCTYPE html>
-
 <html lang="ka">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-```
-<title>DarkSearch | Dashboard</title>
+    <title>DarkSearch | Dashboard</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    :root {
-        --gold: #d4af37;
-        --gold-light: #f5d76e;
-        --gold-dark: #8f6f18;
-        --bg: #030303;
-        --border: rgba(255,255,255,.07);
-    }
-
-    html {
-        scroll-behavior: smooth;
-    }
-
-    body {
-        min-height: 100vh;
-        font-family: "Inter", sans-serif;
-        color: #f5f5f5;
-
-        background:
-            radial-gradient(
-                circle at 10% 10%,
-                rgba(212,175,55,.08),
-                transparent 28%
-            ),
-            radial-gradient(
-                circle at 90% 80%,
-                rgba(212,175,55,.06),
-                transparent 30%
-            ),
-            #030303;
-
-        overflow-x: hidden;
-    }
-
-    /* =========================
-       BACKGROUND
-    ========================= */
-
-    .background {
-        position: fixed;
-        inset: 0;
-        z-index: -10;
-        pointer-events: none;
-        overflow: hidden;
-    }
-
-    .grid {
-        position: absolute;
-        inset: 0;
-        opacity: .10;
-
-        background-image:
-            linear-gradient(
-                rgba(212,175,55,.08) 1px,
-                transparent 1px
-            ),
-            linear-gradient(
-                90deg,
-                rgba(212,175,55,.08) 1px,
-                transparent 1px
-            );
-
-        background-size: 65px 65px;
-    }
-
-    .orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(100px);
-        opacity: .15;
-        animation: floating 12s ease-in-out infinite;
-    }
-
-    .orb.one {
-        width: 350px;
-        height: 350px;
-        top: -150px;
-        left: -120px;
-        background: #d4af37;
-    }
-
-    .orb.two {
-        width: 330px;
-        height: 330px;
-        right: -150px;
-        bottom: -130px;
-        background: #8f6f18;
-        animation-delay: -5s;
-    }
-
-    .orb.three {
-        width: 180px;
-        height: 180px;
-        left: 48%;
-        top: 30%;
-        background: #f5d76e;
-        opacity: .045;
-        animation-delay: -8s;
-    }
-
-    @keyframes floating {
-        0%, 100% {
-            transform: translate3d(0,0,0);
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        50% {
-            transform: translate3d(35px,-25px,0);
-        }
-    }
-
-    /* =========================
-       NAVBAR
-    ========================= */
-
-    .navbar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-
-        width: 100%;
-
-        border-bottom:
-            1px solid
-            rgba(255,255,255,.06);
-
-        background:
-            rgba(3,3,3,.78);
-
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-    }
-
-    .nav-inner {
-        max-width: 1180px;
-        margin: auto;
-
-        min-height: 76px;
-        padding: 0 22px;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-
-        color: white;
-        text-decoration: none;
-    }
-
-    .brand-icon {
-        width: 39px;
-        height: 39px;
-
-        display: grid;
-        place-items: center;
-
-        border-radius: 11px;
-
-        color: #080808;
-
-        font-family: "Orbitron", sans-serif;
-        font-size: 11px;
-        font-weight: 900;
-
-        background:
-            linear-gradient(
-                135deg,
-                #fff1a8,
-                #d4af37,
-                #8f6f18
-            );
-
-        box-shadow:
-            0 0 25px
-            rgba(212,175,55,.13);
-    }
-
-    .brand-name {
-        font-family: "Orbitron", sans-serif;
-
-        font-size: 15px;
-        font-weight: 800;
-
-        letter-spacing: 1.4px;
-    }
-
-    .brand-name span {
-        color: var(--gold);
-    }
-
-    .nav-right {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .user-pill {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        padding: 9px 13px;
-
-        border: 1px solid var(--border);
-        border-radius: 11px;
-
-        background:
-            rgba(255,255,255,.025);
-
-        color: #bcbcbc;
-
-        font-size: 12px;
-    }
-
-    .user-dot {
-        width: 7px;
-        height: 7px;
-
-        border-radius: 50%;
-
-        background: #d4af37;
-
-        box-shadow:
-            0 0 9px
-            rgba(212,175,55,.8);
-    }
-
-    .logout {
-        padding: 9px 13px;
-
-        border:
-            1px solid
-            rgba(255,255,255,.07);
-
-        border-radius: 11px;
-
-        color: #888;
-
-        text-decoration: none;
-
-        font-size: 12px;
-        font-weight: 600;
-
-        background:
-            rgba(255,255,255,.02);
-
-        transition: .25s ease;
-    }
-
-    .logout:hover {
-        color: #fff;
-
-        border-color:
-            rgba(212,175,55,.25);
-
-        background:
-            rgba(212,175,55,.05);
-    }
-
-    /* =========================
-       CONTAINER
-    ========================= */
-
-    .container {
-        width: 100%;
-        max-width: 1180px;
-
-        margin: auto;
-
-        padding:
-            45px 22px 70px;
-    }
-
-    /* =========================
-       WELCOME
-    ========================= */
-
-    .welcome {
-        margin-bottom: 30px;
-    }
-
-    .welcome-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-
-        margin-bottom: 13px;
-
-        color: var(--gold-light);
-
-        font-size: 11px;
-        font-weight: 700;
-
-        letter-spacing: 1.3px;
-        text-transform: uppercase;
-    }
-
-    .welcome-label::before {
-        content: "";
-
-        width: 7px;
-        height: 7px;
-
-        border-radius: 50%;
-
-        background: var(--gold);
-
-        box-shadow:
-            0 0 10px
-            rgba(212,175,55,.7);
-    }
-
-    .welcome h1 {
-        font-family: "Orbitron", sans-serif;
-
-        font-size: clamp(25px, 4vw, 39px);
-
-        line-height: 1.2;
-
-        letter-spacing: -.5px;
-    }
-
-    .welcome h1 span {
-        color: var(--gold);
-    }
-
-    .welcome p {
-        max-width: 650px;
-
-        margin-top: 11px;
-
-        color: #777;
-
-        font-size: 13px;
-        line-height: 1.7;
-    }
-
-    /* =========================
-       STATS
-    ========================= */
-
-    .stats {
-        display: grid;
-
-        grid-template-columns:
-            repeat(3, 1fr);
-
-        gap: 16px;
-
-        margin-bottom: 25px;
-    }
-
-    .stat-card {
-        position: relative;
-
-        padding: 23px;
-
-        border:
-            1px solid
-            rgba(255,255,255,.07);
-
-        border-radius: 20px;
-
-        background:
-            linear-gradient(
-                145deg,
-                rgba(255,255,255,.045),
-                rgba(255,255,255,.015)
-            );
-
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-
-        overflow: hidden;
-
-        transition:
-            transform .3s ease,
-            border-color .3s ease,
-            box-shadow .3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-
-        border-color:
-            rgba(212,175,55,.20);
-
-        box-shadow:
-            0 20px 50px
-            rgba(0,0,0,.35);
-    }
-
-    .stat-card::after {
-        content: "";
-
-        position: absolute;
-
-        width: 100px;
-        height: 100px;
-
-        right: -45px;
-        top: -45px;
-
-        border-radius: 50%;
-
-        background:
-            radial-gradient(
-                circle,
-                rgba(212,175,55,.10),
-                transparent 70%
-            );
-    }
-
-    .stat-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .stat-title {
-        color: #777;
-
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-    .stat-icon {
-        width: 35px;
-        height: 35px;
-
-        display: grid;
-        place-items: center;
-
-        border-radius: 10px;
-
-        color: var(--gold);
-
-        background:
-            rgba(212,175,55,.07);
-
-        border:
-            1px solid
-            rgba(212,175,55,.10);
-    }
-
-    .stat-value {
-        margin-top: 15px;
-
-        font-family: "Orbitron", sans-serif;
-
-        font-size: 25px;
-        font-weight: 700;
-
-        color: #f2f2f2;
-    }
-
-    .stat-description {
-        margin-top: 5px;
-
-        color: #505050;
-
-        font-size: 10px;
-    }
-
-    /* =========================
-       MAIN GRID
-    ========================= */
-
-    .main-grid {
-        display: grid;
-
-        grid-template-columns:
-            1.55fr
-            .85fr;
-
-        gap: 18px;
-    }
-
-    .panel {
-        position: relative;
-
-        padding: 27px;
-
-        border:
-            1px solid
-            rgba(255,255,255,.07);
-
-        border-radius: 22px;
-
-        background:
-            linear-gradient(
-                145deg,
-                rgba(18,18,18,.90),
-                rgba(7,7,7,.90)
-            );
-
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-
-        overflow: hidden;
-    }
-
-    .panel::before {
-        content: "";
-
-        position: absolute;
-
-        width: 200px;
-        height: 200px;
-
-        right: -110px;
-        top: -110px;
-
-        border-radius: 50%;
-
-        background:
-            radial-gradient(
-                circle,
-                rgba(212,175,55,.08),
-                transparent 70%
-            );
-    }
-
-    .panel-header {
-        position: relative;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        margin-bottom: 20px;
-    }
-
-    .panel-title {
-        font-family: "Orbitron", sans-serif;
-
-        font-size: 16px;
-        font-weight: 700;
-    }
-
-    .panel-subtitle {
-        margin-top: 5px;
-
-        color: #626262;
-
-        font-size: 11px;
-    }
-
-    /* =========================
-       SEARCH
-    ========================= */
-
-    .search-card {
-        position: relative;
-
-        min-height: 245px;
-
-        padding: 27px;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        border:
-            1px solid
-            rgba(212,175,55,.13);
-
-        border-radius: 19px;
-
-        background:
-            radial-gradient(
-                circle at 80% 20%,
-                rgba(212,175,55,.09),
-                transparent 32%
-            ),
-            rgba(212,175,55,.025);
-
-        overflow: hidden;
-    }
-
-    .search-card::before {
-        content: "";
-
-        position: absolute;
-
-        width: 240px;
-        height: 240px;
-
-        right: -80px;
-        bottom: -140px;
-
-        border-radius: 50%;
-
-        border:
-            1px solid
-            rgba(212,175,55,.10);
-
-        box-shadow:
-            0 0 0 35px
-            rgba(212,175,55,.025),
-            0 0 0 70px
-            rgba(212,175,55,.015);
-    }
-
-    .search-icon {
-        width: 48px;
-        height: 48px;
-
-        display: grid;
-        place-items: center;
-
-        border-radius: 14px;
-
-        color: #080808;
-
-        font-size: 20px;
-
-        background:
-            linear-gradient(
-                135deg,
-                #fff0a0,
-                #d4af37
-            );
-
-        box-shadow:
-            0 10px 30px
-            rgba(212,175,55,.13);
-    }
-
-    .search-card h2 {
-        position: relative;
-
-        margin-top: 18px;
-
-        font-size: 21px;
-    }
-
-    .search-card p {
-        position: relative;
-
-        max-width: 500px;
-
-        margin-top: 8px;
-
-        color: #777;
-
-        font-size: 12px;
-        line-height: 1.7;
-    }
-
-    .search-button {
-        position: relative;
-
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-
-        width: fit-content;
-
-        margin-top: 22px;
-        padding: 13px 21px;
-
-        border-radius: 12px;
-
-        color: #080808;
-
-        text-decoration: none;
-
-        font-size: 12px;
-        font-weight: 800;
-
-        background:
-            linear-gradient(
-                135deg,
-                #fff0a0,
-                #d4af37,
-                #967219
-            );
-
-        box-shadow:
-            0 10px 25px
-            rgba(212,175,55,.12);
-
-        transition: .25s ease;
-    }
-
-    .search-button:hover {
-        transform: translateY(-3px);
-
-        box-shadow:
-            0 17px 35px
-            rgba(212,175,55,.22);
-    }
-
-    /* =========================
-       ACTIONS
-    ========================= */
-
-    .actions {
-        display: grid;
-        gap: 11px;
-    }
-
-    .action {
-        display: flex;
-        align-items: center;
-        gap: 13px;
-
-        padding: 14px;
-
-        border:
-            1px solid
-            rgba(255,255,255,.06);
-
-        border-radius: 14px;
-
-        color: white;
-
-        text-decoration: none;
-
-        background:
-            rgba(255,255,255,.025);
-
-        transition: .25s ease;
-    }
-
-    .action:hover {
-        transform: translateX(4px);
-
-        border-color:
-            rgba(212,175,55,.18);
-
-        background:
-            rgba(212,175,55,.04);
-    }
-
-    .action-icon {
-        width: 38px;
-        height: 38px;
-
-        flex-shrink: 0;
-
-        display: grid;
-        place-items: center;
-
-        border-radius: 11px;
-
-        color: var(--gold);
-
-        background:
-            rgba(212,175,55,.06);
-    }
-
-    .action-content strong {
-        display: block;
-        font-size: 12px;
-    }
-
-    .action-content span {
-        display: block;
-
-        margin-top: 3px;
-
-        color: #5f5f5f;
-
-        font-size: 10px;
-    }
-
-    .arrow {
-        margin-left: auto;
-
-        color: #555;
-
-        transition: .2s ease;
-    }
-
-    .action:hover .arrow {
-        color: var(--gold);
-        transform: translateX(3px);
-    }
-
-    /* =========================
-       ADMIN
-    ========================= */
-
-    .admin-panel {
-        margin-top: 18px;
-
-        padding: 20px;
-
-        border:
-            1px solid
-            rgba(212,175,55,.13);
-
-        border-radius: 18px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(212,175,55,.055),
-                rgba(255,255,255,.018)
-            );
-    }
-
-    .admin-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-
-        color: var(--gold-light);
-
-        font-size: 10px;
-        font-weight: 800;
-
-        letter-spacing: 1px;
-    }
-
-    .admin-badge::before {
-        content: "";
-
-        width: 6px;
-        height: 6px;
-
-        border-radius: 50%;
-
-        background: var(--gold);
-
-        box-shadow:
-            0 0 8px
-            rgba(212,175,55,.8);
-    }
-
-    .admin-panel p {
-        margin-top: 7px;
-
-        color: #666;
-
-        font-size: 11px;
-        line-height: 1.6;
-    }
-
-    .admin-button {
-        display: inline-block;
-
-        margin-top: 13px;
-        padding: 9px 13px;
-
-        border:
-            1px solid
-            rgba(212,175,55,.17);
-
-        border-radius: 9px;
-
-        color: var(--gold-light);
-
-        text-decoration: none;
-
-        font-size: 10px;
-        font-weight: 700;
-
-        background:
-            rgba(212,175,55,.04);
-
-        transition: .2s ease;
-    }
-
-    .admin-button:hover {
-        background:
-            rgba(212,175,55,.09);
-
-        transform: translateY(-1px);
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
-
-    footer {
-        margin-top: 40px;
-
-        padding-top: 20px;
-
-        border-top:
-            1px solid
-            rgba(255,255,255,.05);
-
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        color: #444;
-
-        font-size: 10px;
-    }
-
-    footer strong {
-        color: #656565;
-    }
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 850px) {
-
-        .main-grid {
-            grid-template-columns: 1fr;
+        :root {
+            --bg: #050505;
+            --bg2: #0b0b0b;
+            --card: rgba(18, 18, 18, 0.72);
+            --card-border: rgba(212, 175, 55, 0.16);
+            --gold: #d4af37;
+            --gold-light: #f4d675;
+            --gold-dark: #8f7119;
+            --text: #f5f5f5;
+            --muted: #929292;
+            --green: #39d98a;
+            --red: #ff5f5f;
         }
 
-        .stats {
-            grid-template-columns:
-                repeat(3, 1fr);
+        body {
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 10%,
+                    rgba(212,175,55,.12),
+                    transparent 30%),
+                radial-gradient(circle at 85% 85%,
+                    rgba(212,175,55,.08),
+                    transparent 32%),
+                linear-gradient(
+                    135deg,
+                    #020202,
+                    #090909 50%,
+                    #020202
+                );
+            overflow-x: hidden;
         }
-    }
 
-    @media (max-width: 600px) {
+        /* =========================================
+           BACKGROUND EFFECT
+        ========================================= */
 
-        .nav-inner {
-            min-height: 68px;
-            padding: 0 15px;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(
+                    rgba(255,255,255,.015) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255,255,255,.015) 1px,
+                    transparent 1px
+                );
+            background-size: 45px 45px;
+            mask-image: linear-gradient(
+                to bottom,
+                black,
+                transparent 85%
+            );
         }
 
-        .brand-name {
-            font-size: 13px;
+        .orb {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(212,175,55,.07);
+            filter: blur(80px);
+            pointer-events: none;
+            animation: floatOrb 10s ease-in-out infinite;
+        }
+
+        .orb.one {
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb.two {
+            right: -100px;
+            bottom: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% {
+                transform: translate(0,0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px,-20px) scale(1.15);
+            }
+        }
+
+        /* =========================================
+           NAVBAR
+        ========================================= */
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 76px;
+            padding: 0 28px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            background: rgba(5,5,5,.78);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+
+            border-bottom: 1px solid rgba(212,175,55,.12);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #050505;
+            font-size: 19px;
+            font-weight: 900;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold),
+                    var(--gold-dark)
+                );
+
+            box-shadow:
+                0 0 25px rgba(212,175,55,.22),
+                inset 0 1px 1px rgba(255,255,255,.5);
+        }
+
+        .brand-text {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .brand-text span {
+            color: var(--gold);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .user-pill {
-            display: none;
+            padding: 9px 14px;
+            border-radius: 12px;
+
+            background: rgba(255,255,255,.045);
+            border: 1px solid rgba(255,255,255,.08);
+
+            font-size: 13px;
+            color: #ccc;
         }
+
+        .user-pill strong {
+            color: var(--gold-light);
+        }
+
+        .logout {
+            padding: 10px 15px;
+            border-radius: 11px;
+
+            text-decoration: none;
+            color: #ddd;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+
+            transition: .25s ease;
+        }
+
+        .logout:hover {
+            color: white;
+            border-color: rgba(212,175,55,.35);
+            background: rgba(212,175,55,.08);
+        }
+
+        /* =========================================
+           CONTAINER
+        ========================================= */
 
         .container {
-            padding:
-                30px 15px 50px;
+            width: min(1180px, calc(100% - 32px));
+            margin: auto;
+            padding: 42px 0 70px;
         }
 
+        /* =========================================
+           HERO
+        ========================================= */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+
+            padding: 42px;
+            margin-bottom: 22px;
+
+            border-radius: 27px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(212,175,55,.08),
+                    rgba(255,255,255,.025) 45%,
+                    rgba(0,0,0,.25)
+                );
+
+            border: 1px solid var(--card-border);
+
+            box-shadow:
+                0 25px 80px rgba(0,0,0,.35),
+                inset 0 1px rgba(255,255,255,.04);
+
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            right: -100px;
+            top: -130px;
+
+            border-radius: 50%;
+
+            background: rgba(212,175,55,.1);
+            filter: blur(45px);
+        }
+
+        .eyebrow {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 {
+            font-size: clamp(30px, 5vw, 48px);
+            line-height: 1.05;
+            margin-bottom: 14px;
+        }
+
+        .hero h1 span {
+            color: var(--gold-light);
+        }
+
+        .hero p {
+            max-width: 650px;
+            color: #9b9b9b;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* =========================================
+           STATS
+        ========================================= */
+
         .stats {
-            grid-template-columns: 1fr;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
         }
 
         .stat-card {
-            padding: 18px;
+            position: relative;
+            padding: 24px;
+
+            border-radius: 20px;
+
+            background: var(--card);
+            border: 1px solid var(--card-border);
+
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            transition: .3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(212,175,55,.32);
+
+            box-shadow:
+                0 18px 45px rgba(0,0,0,.3),
+                0 0 25px rgba(212,175,55,.05);
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 18px;
+
+            color: var(--gold-light);
+            background: rgba(212,175,55,.09);
+            border: 1px solid rgba(212,175,55,.16);
+
+            font-size: 19px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 7px;
         }
 
         .stat-value {
-            font-size: 22px;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .stat-value.gold {
+            color: var(--gold-light);
+        }
+
+        /* =========================================
+           MAIN GRID
+        ========================================= */
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.4fr .8fr;
+            gap: 20px;
         }
 
         .panel {
-            padding: 20px;
+            border-radius: 22px;
+            padding: 27px;
+
+            background: rgba(13,13,13,.75);
+            border: 1px solid rgba(212,175,55,.13);
+
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            box-shadow:
+                0 20px 60px rgba(0,0,0,.25);
         }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 22px;
+        }
+
+        .panel-title h2 {
+            font-size: 18px;
+        }
+
+        .panel-title span {
+            font-size: 11px;
+            color: #777;
+        }
+
+        /* =========================================
+           SEARCH CARD
+        ========================================= */
 
         .search-card {
-            padding: 22px;
+            position: relative;
+            overflow: hidden;
+
+            min-height: 250px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            text-align: center;
+
+            padding: 35px;
+
+            border-radius: 18px;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(212,175,55,.08),
+                    transparent 55%
+                ),
+                rgba(255,255,255,.02);
+
+            border: 1px solid rgba(212,175,55,.11);
         }
+
+        .search-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 18px;
+
+            font-size: 27px;
+            color: #080808;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold)
+                );
+
+            box-shadow:
+                0 0 35px rgba(212,175,55,.2);
+        }
+
+        .search-card h3 {
+            font-size: 21px;
+            margin-bottom: 9px;
+        }
+
+        .search-card p {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+
+        .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-width: 190px;
+            padding: 13px 20px;
+
+            border-radius: 13px;
+
+            color: #050505;
+            text-decoration: none;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold)
+                );
+
+            box-shadow:
+                0 10px 30px rgba(212,175,55,.13);
+
+            transition: .25s ease;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 14px 35px rgba(212,175,55,.24);
+        }
+
+        /* =========================================
+           ACTIONS
+        ========================================= */
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
+            padding: 16px;
+
+            border-radius: 15px;
+
+            text-decoration: none;
+            color: white;
+
+            background: rgba(255,255,255,.025);
+            border: 1px solid rgba(255,255,255,.06);
+
+            transition: .25s ease;
+        }
+
+        .action:hover {
+            transform: translateX(4px);
+
+            background: rgba(212,175,55,.055);
+            border-color: rgba(212,175,55,.2);
+        }
+
+        .action-icon {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--gold-light);
+            background: rgba(212,175,55,.08);
+
+            font-size: 18px;
+        }
+
+        .action-text strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .action-text small {
+            color: #707070;
+            font-size: 11px;
+        }
+
+        .arrow {
+            margin-left: auto;
+            color: #555;
+            font-size: 18px;
+        }
+
+        /* =========================================
+           NOTIFICATIONS
+        ========================================= */
+
+        .notifications {
+            margin-top: 20px;
+        }
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            padding: 15px;
+
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.025);
+            border: 1px solid rgba(255,255,255,.05);
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: #ddd;
+            line-height: 1.5;
+        }
+
+        .notification-date {
+            margin-top: 6px;
+            color: #606060;
+            font-size: 10px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px 10px;
+            color: #5f5f5f;
+            font-size: 13px;
+        }
+
+        /* =========================================
+           ADMIN
+        ========================================= */
+
+        .admin-banner {
+            margin-top: 20px;
+
+            padding: 17px 19px;
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(212,175,55,.11),
+                    rgba(212,175,55,.035)
+                );
+
+            border: 1px solid rgba(212,175,55,.2);
+
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .admin-banner-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 11px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(212,175,55,.13);
+            color: var(--gold-light);
+        }
+
+        .admin-banner strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .admin-banner small {
+            display: block;
+            margin-top: 3px;
+            color: #777;
+        }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
 
         footer {
-            flex-direction: column;
-            gap: 8px;
+            text-align: center;
+            padding-top: 35px;
+            color: #444;
+            font-size: 11px;
         }
-    }
-</style>
-```
 
+        footer span {
+            color: var(--gold-dark);
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 800px) {
+
+            .navbar {
+                height: 68px;
+                padding: 0 16px;
+            }
+
+            .brand-text {
+                font-size: 16px;
+            }
+
+            .brand-logo {
+                width: 38px;
+                height: 38px;
+            }
+
+            .user-pill {
+                display: none;
+            }
+
+            .container {
+                width: min(
+                    100% - 22px,
+                    600px
+                );
+
+                padding-top: 24px;
+            }
+
+            .hero {
+                padding: 28px 22px;
+                border-radius: 21px;
+            }
+
+            .hero h1 {
+                font-size: 31px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 11px;
+            }
+
+            .stat-card {
+                padding: 18px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .stat-icon {
+                margin: 0;
+                flex-shrink: 0;
+            }
+
+            .stat-label {
+                margin-bottom: 3px;
+            }
+
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 19px;
+            }
+
+            .search-card {
+                min-height: 230px;
+                padding: 25px 18px;
+            }
+
+            .logout {
+                padding: 9px 11px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .brand-text {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero p {
+                font-size: 13px;
+            }
+
+            .primary-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="background">
-    <div class="grid"></div>
-    <div class="orb one"></div>
-    <div class="orb two"></div>
-    <div class="orb three"></div>
-</div>
+<div class="orb one"></div>
+<div class="orb two"></div>
 
-<!-- =========================
+<!-- =========================================
      NAVBAR
-========================= -->
+========================================= -->
 
 <nav class="navbar">
 
-```
-<div class="nav-inner">
+    <a href="{{ url_for('dashboard') }}"
+       class="brand">
 
-    <a href="{{ url_for('dashboard') }}" class="brand">
-
-        <div class="brand-icon">
+        <div class="brand-logo">
             DS
         </div>
 
-        <div class="brand-name">
+        <div class="brand-text">
             DARK<span>SEARCH</span>
         </div>
 
@@ -1022,458 +825,518 @@
     <div class="nav-right">
 
         <div class="user-pill">
-
-            <span class="user-dot"></span>
-
-            <span>
-                {% if user %}
-                    {{ user.username }}
-                {% else %}
-                    მომხმარებელი
-                {% endif %}
-            </span>
-
+            👤
+            <strong>
+                {{ user.username }}
+            </strong>
         </div>
 
-        <a
-            href="{{ url_for('logout') }}"
-            class="logout"
-        >
+        <a href="{{ url_for('logout') }}"
+           class="logout">
             გასვლა
         </a>
 
     </div>
 
-</div>
-```
-
 </nav>
 
-<!-- =========================
-     MAIN
-========================= -->
+
+<!-- =========================================
+     CONTENT
+========================================= -->
 
 <main class="container">
 
-```
-<!-- WELCOME -->
+    <!-- HERO -->
 
-<section class="welcome">
+    <section class="hero">
 
-    <div class="welcome-label">
-        პირადი პანელი
-    </div>
-
-    <h1>
-        მოგესალმები,
-        <span>
-            {% if user %}
-                {{ user.username }}
-            {% else %}
-                User
-            {% endif %}
-        </span>
-    </h1>
-
-    <p>
-        მართე შენი ანგარიში, ხელმისაწვდომი ძიებები
-        და სისტემის ფუნქციები ერთი სივრციდან.
-    </p>
-
-</section>
-
-
-<!-- =========================
-     STATS
-========================= -->
-
-<section class="stats">
-
-    <!-- CREDITS -->
-
-    <div class="stat-card">
-
-        <div class="stat-top">
-
-            <div class="stat-title">
-                ხელმისაწვდომი ძიებები
-            </div>
-
-            <div class="stat-icon">
-                ◈
-            </div>
-
+        <div class="eyebrow">
+            Secure Dashboard
         </div>
 
-        <div class="stat-value">
+        <h1>
+            მოგესალმები,
+            <span>{{ user.username }}</span>
+        </h1>
 
-            {% if user and user.credits is defined %}
-                {{ user.credits }}
-            {% else %}
-                0
-            {% endif %}
+        <p>
+            DARKSEARCH-ის პირად პანელში ხარ.
+            აქედან შეგიძლია მართო შენი ანგარიში,
+            კრედიტები და ხელმისაწვდომი ფუნქციები.
+        </p>
 
-        </div>
-
-        <div class="stat-description">
-            დარჩენილი ძიებების რაოდენობა
-        </div>
-
-    </div>
+    </section>
 
 
-    <!-- ACCOUNT -->
+    <!-- STATS -->
 
-    <div class="stat-card">
+    <section class="stats">
 
-        <div class="stat-top">
-
-            <div class="stat-title">
-                ანგარიშის სტატუსი
-            </div>
-
-            <div class="stat-icon">
-                ✓
-            </div>
-
-        </div>
-
-        <div
-            class="stat-value"
-            style="font-size:18px; margin-top:19px;"
-        >
-            აქტიური
-        </div>
-
-        <div class="stat-description">
-            ანგარიში ხელმისაწვდომია
-        </div>
-
-    </div>
-
-
-    <!-- ACCESS -->
-
-    <div class="stat-card">
-
-        <div class="stat-top">
-
-            <div class="stat-title">
-                წვდომა
-            </div>
+        <div class="stat-card">
 
             <div class="stat-icon">
                 ◉
             </div>
 
+            <div>
+                <div class="stat-label">
+                    მომხმარებელი
+                </div>
+
+                <div class="stat-value">
+                    {{ user.username }}
+                </div>
+            </div>
+
         </div>
 
-        <div
-            class="stat-value"
-            style="font-size:18px; margin-top:19px;"
-        >
 
-            {% if user and user.is_admin %}
-                ADMIN
-            {% else %}
-                USER
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ◈
+            </div>
+
+            <div>
+                <div class="stat-label">
+                    ხელმისაწვდომი კრედიტები
+                </div>
+
+                <div class="stat-value gold">
+                    {{ user.credits }}
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                {% if user.is_admin %}
+                    ★
+                {% else %}
+                    ✓
+                {% endif %}
+            </div>
+
+            <div>
+
+                <div class="stat-label">
+                    ანგარიშის ტიპი
+                </div>
+
+                <div class="stat-value">
+                    {% if user.is_admin %}
+                        ADMIN
+                    {% else %}
+                        USER
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MAIN -->
+
+    <section class="main-grid">
+
+
+        <!-- SEARCH -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <h2>
+                    ძიება
+                </h2>
+
+                <span>
+                    DARKSEARCH
+                </span>
+
+            </div>
+
+
+            <div class="search-card">
+
+                <div class="search-icon">
+                    ⌕
+                </div>
+
+                <h3>
+                    საძიებო სისტემა
+                </h3>
+
+                <p>
+                    გადადი საძიებო გვერდზე
+                    და გამოიყენე შენთვის ხელმისაწვდომი
+                    ფუნქციები.
+                </p>
+
+                {% if user.credits > 0 or user.is_admin %}
+
+                    <a href="{{ url_for('search') }}"
+                       class="primary-btn">
+                        ძიების გახსნა →
+                    </a>
+
+                {% else %}
+
+                    <a href="{{ url_for('purchase_page') }}"
+                       class="primary-btn">
+                        კრედიტების შეძენა →
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <h2>
+                    სწრაფი მოქმედებები
+                </h2>
+
+            </div>
+
+
+            <div class="actions">
+
+                <a href="{{ url_for('search') }}"
+                   class="action">
+
+                    <div class="action-icon">
+                        ⌕
+                    </div>
+
+                    <div class="action-text">
+
+                        <strong>
+                            ძიება
+                        </strong>
+
+                        <small>
+                            საძიებო გვერდის გახსნა
+                        </small>
+
+                    </div>
+
+                    <div class="arrow">
+                        ›
+                    </div>
+
+                </a>
+
+
+                <a href="{{ url_for('purchase_page') }}"
+                   class="action">
+
+                    <div class="action-icon">
+                        ◈
+                    </div>
+
+                    <div class="action-text">
+
+                        <strong>
+                            კრედიტების შეძენა
+                        </strong>
+
+                        <small>
+                            აირჩიე სასურველი პაკეტი
+                        </small>
+
+                    </div>
+
+                    <div class="arrow">
+                        ›
+                    </div>
+
+                </a>
+
+
+                {% if user.is_admin %}
+
+                <a href="{{ url_for('admin_page') }}"
+                   class="action">
+
+                    <div class="action-icon">
+                        ⚙
+                    </div>
+
+                    <div class="action-text">
+
+                        <strong>
+                            ადმინისტრაცია
+                        </strong>
+
+                        <small>
+                            მართვის პანელი
+                        </small>
+
+                    </div>
+
+                    <div class="arrow">
+                        ›
+                    </div>
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if user.is_admin %}
+
+            <div class="admin-banner">
+
+                <div class="admin-banner-icon">
+                    ★
+                </div>
+
+                <div>
+
+                    <strong>
+                        ადმინისტრატორის ანგარიში
+                    </strong>
+
+                    <small>
+                        თქვენ გაქვთ ადმინისტრაციული წვდომა.
+                    </small>
+
+                </div>
+
+            </div>
+
             {% endif %}
 
         </div>
 
-        <div class="stat-description">
-            ანგარიშის ტიპი
-        </div>
-
-    </div>
-
-</section>
+    </section>
 
 
-<!-- =========================
-     MAIN GRID
-========================= -->
+    <!-- NOTIFICATIONS -->
 
-<section class="main-grid">
+    <section class="panel notifications">
 
-    <!-- SEARCH -->
-
-    <div class="panel">
-
-        <div class="panel-header">
-
-            <div>
-
-                <div class="panel-title">
-                    მონაცემთა ძიება
-                </div>
-
-                <div class="panel-subtitle">
-                    ავტორიზებული მომხმარებლის სივრცე
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="search-card">
-
-            <div class="search-icon">
-                ⌕
-            </div>
+        <div class="panel-title">
 
             <h2>
-                დაიწყე ძიება
+                შეტყობინებები
             </h2>
 
-            <p>
-                გადადი ძიების გვერდზე და გამოიყენე
-                შენთვის ხელმისაწვდომი ფუნქციები.
-            </p>
-
-            <!-- IMPORTANT:
-                 endpoint is "search", not "search_page"
-            -->
-
-            <a
-                href="{{ url_for('search') }}"
-                class="search-button"
-            >
-                ძიების გახსნა&nbsp; →
-            </a>
+            <span id="notification-count">
+                ჩატვირთვა...
+            </span>
 
         </div>
 
-    </div>
 
+        <div id="notification-list"
+             class="notification-list">
 
-    <!-- QUICK ACTIONS -->
-
-    <div class="panel">
-
-        <div class="panel-header">
-
-            <div>
-
-                <div class="panel-title">
-                    სწრაფი მოქმედებები
-                </div>
-
-                <div class="panel-subtitle">
-                    ანგარიშის მართვა
-                </div>
-
+            <div class="empty">
+                შეტყობინებები იტვირთება...
             </div>
 
         </div>
 
-
-        <div class="actions">
-
-            <!-- SEARCH -->
-
-            <a
-                href="{{ url_for('search') }}"
-                class="action"
-            >
-
-                <div class="action-icon">
-                    ⌕
-                </div>
-
-                <div class="action-content">
-
-                    <strong>
-                        ძიება
-                    </strong>
-
-                    <span>
-                        ძიების გვერდზე გადასვლა
-                    </span>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-            </a>
+    </section>
 
 
-            <!-- PURCHASE -->
-
-            <a
-                href="{{ url_for('purchase_page') }}"
-                class="action"
-            >
-
-                <div class="action-icon">
-                    ◈
-                </div>
-
-                <div class="action-content">
-
-                    <strong>
-                        ძიებების შეძენა
-                    </strong>
-
-                    <span>
-                        ხელმისაწვდომი პაკეტები
-                    </span>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-            </a>
-
-
-            <!-- LOGOUT -->
-
-            <a
-                href="{{ url_for('logout') }}"
-                class="action"
-            >
-
-                <div class="action-icon">
-                    ↪
-                </div>
-
-                <div class="action-content">
-
-                    <strong>
-                        ანგარიშიდან გასვლა
-                    </strong>
-
-                    <span>
-                        უსაფრთხოდ გამოსვლა
-                    </span>
-
-                </div>
-
-                <div class="arrow">
-                    →
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- =========================
-             ADMIN
-        ========================= -->
-
-        {% if user and user.is_admin %}
-
-        <div class="admin-panel">
-
-            <div class="admin-badge">
-                ADMIN ACCESS
-            </div>
-
-            <p>
-                ადმინისტრატორის პანელი ხელმისაწვდომია
-                ამ ანგარიშისთვის.
-            </p>
-
-            <!--
-                Direct route.
-                This avoids the previous
-                "admin_page" endpoint error.
-            -->
-
-            <a
-                href="/admin"
-                class="admin-button"
-            >
-                Admin Panel →
-            </a>
-
-        </div>
-
-        {% endif %}
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     FOOTER
-========================= -->
-
-<footer>
-
-    <div>
-        © 2026 <strong>DarkSearch</strong>
-    </div>
-
-    <div>
-        Secure Dashboard
-    </div>
-
-</footer>
-```
+    <footer>
+        DARK<span>SEARCH</span>
+        · Secure Dashboard
+    </footer>
 
 </main>
 
+
 <script>
 
-    /* =========================
-       3D CARD EFFECT
-    ========================= */
+    /* =========================================
+       NOTIFICATIONS
+    ========================================= */
 
-    const cards =
-        document.querySelectorAll(".stat-card, .panel");
+    async function loadNotifications() {
 
-    if (window.innerWidth > 900) {
-
-        cards.forEach(function(card) {
-
-            card.addEventListener(
-                "mousemove",
-                function(event) {
-
-                    const rect =
-                        card.getBoundingClientRect();
-
-                    const x =
-                        event.clientX - rect.left;
-
-                    const y =
-                        event.clientY - rect.top;
-
-                    const rotateX =
-                        ((y / rect.height) - .5) * -3;
-
-                    const rotateY =
-                        ((x / rect.width) - .5) * 3;
-
-                    card.style.transform =
-                        `perspective(900px)
-                         rotateX(${rotateX}deg)
-                         rotateY(${rotateY}deg)
-                         translateY(-3px)`;
-
-                }
+        const list =
+            document.getElementById(
+                "notification-list"
             );
 
-            card.addEventListener(
-                "mouseleave",
-                function() {
-
-                    card.style.transform = "";
-
-                }
+        const count =
+            document.getElementById(
+                "notification-count"
             );
 
-        });
+        try {
 
+            const response =
+                await fetch(
+                    "{{ url_for('notifications_api') }}"
+                );
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                list.innerHTML = `
+                    <div class="empty">
+                        შეტყობინებების ჩატვირთვა ვერ მოხერხდა.
+                    </div>
+                `;
+
+                return;
+            }
+
+            const notifications =
+                data.notifications || [];
+
+            const unread =
+                data.unread || 0;
+
+
+            if (unread > 0) {
+
+                count.textContent =
+                    unread + " ახალი";
+
+            } else {
+
+                count.textContent =
+                    "ყველაფერი წაკითხულია";
+
+            }
+
+
+            if (notifications.length === 0) {
+
+                list.innerHTML = `
+                    <div class="empty">
+                        ახალი შეტყობინებები არ არის.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            list.innerHTML =
+                notifications
+                    .map(notification => {
+
+                        const date =
+                            notification.created_at
+                            ? formatDate(
+                                notification.created_at
+                            )
+                            : "";
+
+                        return `
+                            <div class="notification">
+
+                                <div class="notification-message">
+                                    ${escapeHtml(
+                                        notification.message
+                                    )}
+                                </div>
+
+                                <div class="notification-date">
+                                    ${date}
+                                </div>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
+
+
+        } catch (error) {
+
+            console.error(
+                "Notifications error:",
+                error
+            );
+
+            list.innerHTML = `
+                <div class="empty">
+                    შეტყობინებების ჩატვირთვა ვერ მოხერხდა.
+                </div>
+            `;
+        }
     }
+
+
+    /* =========================================
+       DATE
+    ========================================= */
+
+    function formatDate(value) {
+
+        try {
+
+            const date =
+                new Date(value);
+
+            if (isNaN(date.getTime())) {
+                return value;
+            }
+
+            return date.toLocaleString(
+                "ka-GE",
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        } catch {
+
+            return value;
+        }
+    }
+
+
+    /* =========================================
+       HTML ESCAPE
+    ========================================= */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    loadNotifications();
 
 </script>
 
