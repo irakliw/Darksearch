@@ -70,6 +70,13 @@ TURSO_PIPELINE_URL = TURSO_HTTP_URL + "/v2/pipeline"
 
 
 def turso_execute(sql, params=None):
+    """
+    Execute a SQL statement through Turso HTTP Pipeline API.
+
+    IMPORTANT:
+    Turso expects the bind argument 'value' to be a string,
+    even when the argument type is integer/float.
+    """
 
     if params is None:
         params = []
@@ -86,13 +93,19 @@ def turso_execute(sql, params=None):
         elif isinstance(value, bool):
             args.append({
                 "type": "integer",
-                "value": 1 if value else 0
+                "value": "1" if value else "0"
             })
 
         elif isinstance(value, int):
             args.append({
                 "type": "integer",
-                "value": value
+                "value": str(value)
+            })
+
+        elif isinstance(value, float):
+            args.append({
+                "type": "float",
+                "value": str(value)
             })
 
         else:
@@ -257,10 +270,6 @@ def ensure_admin():
 
     if rows:
 
-        print("[OK] Admin account already exists")
-
-        # Make sure an existing admin username
-        # actually has admin privileges.
         turso_execute(
             """
             UPDATE app_users
@@ -269,6 +278,8 @@ def ensure_admin():
             """,
             [admin_username]
         )
+
+        print("[OK] Admin account already exists")
 
         return
 
@@ -301,7 +312,7 @@ def ensure_admin():
 
 
 # ============================================================
-# USER
+# CURRENT USER
 # ============================================================
 
 def current_user():
@@ -311,36 +322,49 @@ def current_user():
     if not user_id:
         return None
 
-    result = turso_execute(
-        """
-        SELECT
-            id,
-            username,
-            credits,
-            is_admin
-        FROM app_users
-        WHERE id = ?
-        LIMIT 1
-        """,
-        [user_id]
-    )
+    try:
 
-    rows = result.get("rows", [])
+        result = turso_execute(
+            """
+            SELECT
+                id,
+                username,
+                credits,
+                is_admin
+            FROM app_users
+            WHERE id = ?
+            LIMIT 1
+            """,
+            [user_id]
+        )
 
-    if not rows:
+        rows = result.get("rows", [])
+
+        if not rows:
+
+            session.clear()
+
+            return None
+
+        row = rows[0]
+
+        return {
+            "id": int(row[0]["value"]),
+            "username": row[1]["value"],
+            "credits": int(row[2]["value"]),
+            "is_admin": int(row[3]["value"])
+        }
+
+    except Exception as e:
+
+        print(
+            "[CURRENT USER ERROR]",
+            repr(e)
+        )
 
         session.clear()
 
         return None
-
-    row = rows[0]
-
-    return {
-        "id": int(row[0]["value"]),
-        "username": row[1]["value"],
-        "credits": int(row[2]["value"]),
-        "is_admin": int(row[3]["value"])
-    }
 
 
 # ============================================================
@@ -400,7 +424,7 @@ def admin_required(view):
 
 
 # ============================================================
-# CONTEXT
+# CONTEXT PROCESSOR
 # ============================================================
 
 @app.context_processor
@@ -423,7 +447,9 @@ def inject_user():
 @app.route("/")
 def index():
 
-    if current_user():
+    user = current_user()
+
+    if user:
 
         return redirect(
             url_for("dashboard")
@@ -469,6 +495,10 @@ def register():
                 ""
             )
 
+            # ----------------------------------------
+            # VALIDATION
+            # ----------------------------------------
+
             if len(username) < 3:
 
                 flash(
@@ -513,6 +543,10 @@ def register():
                     url_for("register")
                 )
 
+            # ----------------------------------------
+            # CHECK USERNAME
+            # ----------------------------------------
+
             result = turso_execute(
                 """
                 SELECT id
@@ -533,6 +567,10 @@ def register():
                 return redirect(
                     url_for("register")
                 )
+
+            # ----------------------------------------
+            # CREATE USER
+            # ----------------------------------------
 
             password_hash = generate_password_hash(
                 password
@@ -557,6 +595,10 @@ def register():
                     0,
                     datetime.utcnow().isoformat()
                 ]
+            )
+
+            print(
+                f"[OK] New user registered: {username}"
             )
 
             flash(
@@ -620,6 +662,17 @@ def login():
                 ""
             )
 
+            if not username or not password:
+
+                flash(
+                    "შეავსეთ ყველა ველი.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("login")
+                )
+
             result = turso_execute(
                 """
                 SELECT
@@ -680,6 +733,10 @@ def login():
             session["username"] = db_username
 
             session.permanent = True
+
+            print(
+                f"[OK] User logged in: {db_username}"
+            )
 
             return redirect(
                 url_for("dashboard")
@@ -772,6 +829,8 @@ def api_search():
             "error": "ძებნის კრედიტები არ გაქვთ."
         }), 403
 
+    # Search against sensitive personal-data records
+    # is intentionally not exposed by this public deployment.
     return jsonify({
         "success": False,
         "error": "საძიებო ფუნქცია ჯერ არ არის ჩართული."
@@ -779,7 +838,7 @@ def api_search():
 
 
 # ============================================================
-# PURCHASE
+# PURCHASE PAGE
 # ============================================================
 
 @app.route("/purchase")
@@ -889,6 +948,11 @@ def purchase_request():
             ]
         )
 
+        print(
+            f"[OK] Purchase request created "
+            f"for user={user['username']}"
+        )
+
         flash(
             "მოთხოვნა გაიგზავნა ადმინისტრატორთან.",
             "success"
@@ -919,7 +983,9 @@ def purchase_request():
 @admin_required
 def admin_page():
 
+    # ----------------------------------------
     # USERS
+    # ----------------------------------------
 
     users_result = turso_execute(
         """
@@ -961,7 +1027,9 @@ def admin_page():
         })
 
 
-    # PAYMENTS
+    # ----------------------------------------
+    # PAYMENT REQUESTS
+    # ----------------------------------------
 
     payments_result = turso_execute(
         """
@@ -1018,7 +1086,9 @@ def admin_page():
         })
 
 
-    # STATS
+    # ----------------------------------------
+    # TOTAL USERS
+    # ----------------------------------------
 
     total_users_result = turso_execute(
         """
@@ -1032,6 +1102,10 @@ def admin_page():
     )
 
 
+    # ----------------------------------------
+    # TOTAL CREDITS
+    # ----------------------------------------
+
     total_credits_result = turso_execute(
         """
         SELECT COALESCE(SUM(credits), 0)
@@ -1043,6 +1117,10 @@ def admin_page():
         total_credits_result["rows"][0][0]["value"]
     )
 
+
+    # ----------------------------------------
+    # PENDING PAYMENTS
+    # ----------------------------------------
 
     pending_result = turso_execute(
         """
@@ -1056,6 +1134,10 @@ def admin_page():
         pending_result["rows"][0][0]["value"]
     )
 
+
+    # ----------------------------------------
+    # SEARCH COUNT
+    # ----------------------------------------
 
     searches_result = turso_execute(
         """
@@ -1158,6 +1240,7 @@ def approve_payment(request_id):
             url_for("admin_page")
         )
 
+    # Add credits
     turso_execute(
         """
         UPDATE app_users
@@ -1170,6 +1253,7 @@ def approve_payment(request_id):
         ]
     )
 
+    # Mark payment approved
     turso_execute(
         """
         UPDATE purchase_requests
@@ -1184,6 +1268,7 @@ def approve_payment(request_id):
         ]
     )
 
+    # Notification
     turso_execute(
         """
         INSERT INTO notifications
@@ -1271,6 +1356,7 @@ def reject_payment(request_id):
             url_for("admin_page")
         )
 
+    # Mark rejected
     turso_execute(
         """
         UPDATE purchase_requests
@@ -1285,6 +1371,7 @@ def reject_payment(request_id):
         ]
     )
 
+    # Notification
     turso_execute(
         """
         INSERT INTO notifications
@@ -1386,7 +1473,7 @@ def health():
 
     try:
 
-        result = turso_execute(
+        turso_execute(
             "SELECT 1 AS test"
         )
 
