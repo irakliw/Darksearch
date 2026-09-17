@@ -1,1 +1,1462 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
+    <title>DarkSearch | Admin Panel</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --gold: #d4af37;
+            --gold-light: #ffe58a;
+            --gold-dark: #8e711d;
+
+            --black: #030303;
+            --black-2: #090909;
+            --card: rgba(17,17,17,.78);
+
+            --border: rgba(212,175,55,.20);
+
+            --text: #f4f4f4;
+            --muted: #858585;
+
+            --green: #53d769;
+            --red: #ff5b5b;
+            --blue: #5aa9ff;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 10% 0%,
+                    rgba(212,175,55,.13),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(212,175,55,.07),
+                    transparent 30%
+                ),
+                #030303;
+
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           BACKGROUND
+        ========================================= */
+
+        .orb {
+            position: fixed;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: .11;
+            pointer-events: none;
+            z-index: -1;
+            animation: floating 10s ease-in-out infinite;
+        }
+
+        .orb.one {
+            top: -150px;
+            left: -130px;
+            background: var(--gold);
+        }
+
+        .orb.two {
+            right: -150px;
+            bottom: -130px;
+            background: #9a771e;
+            animation-delay: -5s;
+        }
+
+        @keyframes floating {
+            0%,100% {
+                transform: translate(0,0);
+            }
+
+            50% {
+                transform: translate(30px,-25px);
+            }
+        }
+
+        /* =========================================
+           NAVBAR
+        ========================================= */
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            height: 72px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 28px;
+
+            background: rgba(4,4,4,.80);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+
+            border-bottom: 1px solid rgba(212,175,55,.14);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            color: white;
+            text-decoration: none;
+
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .brand-icon {
+            width: 39px;
+            height: 39px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 12px;
+
+            color: #111;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold),
+                    var(--gold-dark)
+                );
+
+            box-shadow:
+                0 0 25px rgba(212,175,55,.22),
+                inset 0 1px 1px rgba(255,255,255,.5);
+        }
+
+        .gold {
+            color: var(--gold);
+        }
+
+        .admin-badge {
+            margin-left: 5px;
+
+            padding: 5px 9px;
+
+            border-radius: 8px;
+
+            color: var(--gold-light);
+
+            background: rgba(212,175,55,.08);
+            border: 1px solid rgba(212,175,55,.20);
+
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .5px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 38px;
+
+            padding: 0 13px;
+
+            color: #ccc;
+            text-decoration: none;
+
+            border-radius: 10px;
+
+            background: rgba(255,255,255,.035);
+            border: 1px solid rgba(255,255,255,.08);
+
+            font-size: 12px;
+            font-weight: 700;
+
+            transition: .2s;
+        }
+
+        .nav-btn:hover {
+            color: var(--gold-light);
+            border-color: rgba(212,175,55,.30);
+            transform: translateY(-1px);
+        }
+
+        .logout:hover {
+            color: #ff7777;
+            border-color: rgba(255,91,91,.3);
+        }
+
+        /* =========================================
+           CONTAINER
+        ========================================= */
+
+        .container {
+            width: min(1200px, calc(100% - 30px));
+            margin: 35px auto 60px;
+        }
+
+        .page-heading {
+            margin-bottom: 28px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 7px 12px;
+
+            border-radius: 999px;
+
+            color: var(--gold-light);
+
+            background: rgba(212,175,55,.06);
+            border: 1px solid rgba(212,175,55,.18);
+
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .page-heading h1 {
+            margin-top: 14px;
+
+            font-size: clamp(30px, 5vw, 45px);
+            line-height: 1;
+
+            font-weight: 950;
+            letter-spacing: -1.5px;
+        }
+
+        .page-heading p {
+            max-width: 720px;
+
+            margin-top: 12px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        /* =========================================
+           GLASS
+        ========================================= */
+
+        .glass {
+            position: relative;
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(23,23,23,.88),
+                    rgba(8,8,8,.72)
+                );
+
+            border: 1px solid var(--border);
+            border-radius: 22px;
+
+            box-shadow:
+                0 25px 70px rgba(0,0,0,.42),
+                inset 0 1px 0 rgba(255,255,255,.03);
+
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+        }
+
+        .glass::after {
+            content: "";
+
+            position: absolute;
+
+            width: 180px;
+            height: 180px;
+
+            right: -100px;
+            top: -100px;
+
+            border-radius: 50%;
+
+            background: var(--gold);
+
+            filter: blur(90px);
+
+            opacity: .045;
+
+            pointer-events: none;
+        }
+
+        /* =========================================
+           STATS
+        ========================================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+
+            margin-bottom: 24px;
+        }
+
+        .stat {
+            padding: 20px;
+
+            transition: .25s;
+        }
+
+        .stat:hover {
+            transform: translateY(-3px);
+            border-color: rgba(212,175,55,.35);
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+
+            display: grid;
+            place-items: center;
+
+            margin-bottom: 14px;
+
+            border-radius: 12px;
+
+            color: var(--gold-light);
+
+            background: rgba(212,175,55,.08);
+            border: 1px solid rgba(212,175,55,.12);
+        }
+
+        .stat-value {
+            font-size: 25px;
+            font-weight: 900;
+        }
+
+        .stat-label {
+            margin-top: 4px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+        }
+
+        /* =========================================
+           SECTION HEADER
+        ========================================= */
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title-icon {
+            width: 39px;
+            height: 39px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 11px;
+
+            color: #111;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold)
+                );
+        }
+
+        .section-title h2 {
+            font-size: 19px;
+        }
+
+        .section-title p {
+            margin-top: 2px;
+
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* =========================================
+           PAYMENT REQUESTS
+        ========================================= */
+
+        .payment-list {
+            display: grid;
+            gap: 11px;
+        }
+
+        .payment-card {
+            display: grid;
+
+            grid-template-columns:
+                1.3fr
+                1fr
+                .8fr
+                .9fr
+                auto;
+
+            align-items: center;
+
+            gap: 15px;
+
+            padding: 17px;
+
+            background: rgba(255,255,255,.025);
+
+            border: 1px solid rgba(255,255,255,.065);
+
+            border-radius: 16px;
+
+            transition: .2s;
+        }
+
+        .payment-card:hover {
+            border-color: rgba(212,175,55,.20);
+            background: rgba(212,175,55,.025);
+        }
+
+        .user-main {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+
+            display: grid;
+            place-items: center;
+
+            flex-shrink: 0;
+
+            border-radius: 11px;
+
+            color: #111;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--gold-light),
+                    var(--gold)
+                );
+
+            font-weight: 900;
+        }
+
+        .username {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .small {
+            margin-top: 3px;
+
+            color: #6d6d6d;
+
+            font-size: 10px;
+        }
+
+        .payment-info {
+            color: #bbb;
+            font-size: 12px;
+        }
+
+        .payment-info strong {
+            display: block;
+
+            margin-bottom: 3px;
+
+            color: #eee;
+
+            font-size: 12px;
+        }
+
+        .status {
+            display: inline-flex;
+
+            width: max-content;
+
+            padding: 6px 9px;
+
+            border-radius: 8px;
+
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .status.pending {
+            color: #ffd96a;
+            background: rgba(212,175,55,.09);
+        }
+
+        .status.approved {
+            color: var(--green);
+            background: rgba(83,215,105,.08);
+        }
+
+        .status.rejected {
+            color: var(--red);
+            background: rgba(255,91,91,.08);
+        }
+
+        .actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .action-btn {
+            height: 35px;
+
+            padding: 0 11px;
+
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            transition: .2s;
+        }
+
+        .approve {
+            color: #111;
+
+            border: 0;
+
+            background: var(--gold);
+        }
+
+        .approve:hover {
+            background: var(--gold-light);
+            transform: translateY(-1px);
+        }
+
+        .reject {
+            color: #ff7777;
+
+            border: 1px solid rgba(255,91,91,.22);
+
+            background: rgba(255,91,91,.05);
+        }
+
+        .reject:hover {
+            background: rgba(255,91,91,.10);
+        }
+
+        /* =========================================
+           USERS TABLE
+        ========================================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 700px;
+        }
+
+        th {
+            padding: 15px 14px;
+
+            text-align: left;
+
+            color: #777;
+
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .4px;
+
+            border-bottom: 1px solid rgba(255,255,255,.07);
+        }
+
+        td {
+            padding: 15px 14px;
+
+            color: #ccc;
+
+            font-size: 12px;
+
+            border-bottom: 1px solid rgba(255,255,255,.045);
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .table-user {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .mini-avatar {
+            width: 31px;
+            height: 31px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 9px;
+
+            color: #111;
+
+            background: linear-gradient(
+                135deg,
+                var(--gold-light),
+                var(--gold)
+            );
+
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .credits-number {
+            color: var(--gold-light);
+            font-weight: 900;
+        }
+
+        .active {
+            color: var(--green);
+        }
+
+        .inactive {
+            color: var(--red);
+        }
+
+        /* =========================================
+           EMPTY
+        ========================================= */
+
+        .empty {
+            padding: 45px 20px;
+
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 55px;
+            height: 55px;
+
+            display: grid;
+            place-items: center;
+
+            margin: 0 auto 13px;
+
+            border-radius: 16px;
+
+            color: var(--gold);
+
+            background: rgba(212,175,55,.06);
+            border: 1px solid rgba(212,175,55,.12);
+
+            font-size: 22px;
+        }
+
+        .empty h3 {
+            font-size: 16px;
+        }
+
+        .empty p {
+            margin-top: 6px;
+
+            color: #666;
+
+            font-size: 12px;
+        }
+
+        /* =========================================
+           FLASH
+        ========================================= */
+
+        .flash-container {
+            display: grid;
+            gap: 8px;
+
+            margin-bottom: 20px;
+        }
+
+        .flash {
+            padding: 13px 15px;
+
+            border-radius: 12px;
+
+            font-size: 12px;
+
+            border: 1px solid;
+        }
+
+        .flash.success {
+            color: #74e58a;
+            background: rgba(83,215,105,.06);
+            border-color: rgba(83,215,105,.16);
+        }
+
+        .flash.error {
+            color: #ff8585;
+            background: rgba(255,91,91,.06);
+            border-color: rgba(255,91,91,.16);
+        }
+
+        .flash.info {
+            color: #7bbaff;
+            background: rgba(90,169,255,.06);
+            border-color: rgba(90,169,255,.16);
+        }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
+        footer {
+            margin-top: 45px;
+
+            text-align: center;
+
+            color: #505050;
+
+            font-size: 10px;
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 850px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .payment-card {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .payment-card .actions {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .navbar {
+                height: 65px;
+                padding: 0 13px;
+            }
+
+            .brand {
+                font-size: 15px;
+            }
+
+            .brand-icon {
+                width: 34px;
+                height: 34px;
+            }
+
+            .admin-badge {
+                display: none;
+            }
+
+            .nav-btn.dashboard {
+                display: none;
+            }
+
+            .container {
+                width: calc(100% - 20px);
+                margin-top: 24px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 9px;
+            }
+
+            .stat {
+                padding: 15px;
+            }
+
+            .stat-icon {
+                width: 36px;
+                height: 36px;
+                margin-bottom: 10px;
+            }
+
+            .stat-value {
+                font-size: 21px;
+            }
+
+            .payment-card {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .payment-card .actions {
+                grid-column: auto;
+                width: 100%;
+            }
+
+            .payment-card .action-btn {
+                flex: 1;
+            }
+
+            .section-header {
+                align-items: flex-start;
+            }
+
+            .page-heading h1 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="orb one"></div>
+<div class="orb two"></div>
+
+
+<!-- =========================================
+     NAVBAR
+========================================= -->
+
+<nav class="navbar">
+
+    <a href="{{ url_for('dashboard') }}" class="brand">
+
+        <div class="brand-icon">
+            ◈
+        </div>
+
+        <span>
+            DARK<span class="gold">SEARCH</span>
+        </span>
+
+        <span class="admin-badge">
+            ADMIN
+        </span>
+
+    </a>
+
+
+    <div class="nav-actions">
+
+        <a href="{{ url_for('dashboard') }}"
+           class="nav-btn dashboard">
+            ← Dashboard
+        </a>
+
+        <a href="{{ url_for('logout') }}"
+           class="nav-btn logout">
+            გასვლა
+        </a>
+
+    </div>
+
+</nav>
+
+
+<main class="container">
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <section class="page-heading">
+
+        <div class="badge">
+            ◆ ADMINISTRATOR CONTROL CENTER
+        </div>
+
+        <h1>
+            Admin <span class="gold">Panel</span>
+        </h1>
+
+        <p>
+            აქედან შესაძლებელია მომხმარებლების, კრედიტების
+            და გადახდის მოთხოვნების ადმინისტრირება.
+        </p>
+
+    </section>
+
+
+    <!-- =========================================
+         FLASH MESSAGES
+    ========================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+        <div class="flash-container">
+
+            {% for category, message in messages %}
+
+                <div class="flash {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- =========================================
+         STATISTICS
+    ========================================== -->
+
+    <section class="stats">
+
+        <div class="glass stat">
+
+            <div class="stat-icon">
+                👥
+            </div>
+
+            <div class="stat-value">
+                {{ stats.total_users if stats is defined else users|length if users is defined else 0 }}
+            </div>
+
+            <div class="stat-label">
+                მომხმარებლები
+            </div>
+
+        </div>
+
+
+        <div class="glass stat">
+
+            <div class="stat-icon">
+                🪙
+            </div>
+
+            <div class="stat-value">
+                {{ stats.total_credits if stats is defined else 0 }}
+            </div>
+
+            <div class="stat-label">
+                ჯამური კრედიტები
+            </div>
+
+        </div>
+
+
+        <div class="glass stat">
+
+            <div class="stat-icon">
+                ⏳
+            </div>
+
+            <div class="stat-value">
+                {{ stats.pending_payments if stats is defined else payments|length if payments is defined else 0 }}
+            </div>
+
+            <div class="stat-label">
+                მომლოდინე გადახდები
+            </div>
+
+        </div>
+
+
+        <div class="glass stat">
+
+            <div class="stat-icon">
+                🔎
+            </div>
+
+            <div class="stat-value">
+                {{ stats.total_searches if stats is defined else 0 }}
+            </div>
+
+            <div class="stat-label">
+                შესრულებული ძიებები
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         PAYMENT REQUESTS
+    ========================================== -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <div class="section-title">
+
+                <div class="section-title-icon">
+                    💳
+                </div>
+
+                <div>
+
+                    <h2>
+                        გადახდის მოთხოვნები
+                    </h2>
+
+                    <p>
+                        მომხმარებლების მიერ გამოგზავნილი გადარიცხვები
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="glass">
+
+            {% if payments is defined and payments %}
+
+            <div class="payment-list">
+
+                {% for payment in payments %}
+
+                <div class="payment-card">
+
+                    <!-- USER -->
+
+                    <div class="user-main">
+
+                        <div class="avatar">
+                            {{ payment.username[0]|upper if payment.username else "U" }}
+                        </div>
+
+                        <div>
+
+                            <div class="username">
+                                {{ payment.username|default("Unknown") }}
+                            </div>
+
+                            <div class="small">
+                                {{ payment.created_at|default("თარიღი უცნობია") }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SENDER -->
+
+                    <div class="payment-info">
+
+                        <strong>
+                            გამგზავნი
+                        </strong>
+
+                        {{ payment.sender_name|default("—") }}
+
+                    </div>
+
+
+                    <!-- PACKAGE -->
+
+                    <div class="payment-info">
+
+                        <strong>
+                            პაკეტი
+                        </strong>
+
+                        {{ payment.package|default("—") }}
+
+                    </div>
+
+
+                    <!-- AMOUNT -->
+
+                    <div class="payment-info">
+
+                        <strong>
+                            თანხა / ძიება
+                        </strong>
+
+                        {{ payment.price|default("—") }} ₾
+
+                        ·
+
+                        {{ payment.searches|default(0) }}
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="actions">
+
+                        {% if payment.status|default("pending") == "pending" %}
+
+                        <form method="POST"
+                              action="{{ url_for('approve_payment', payment_id=payment.id) }}"
+                              onsubmit="return confirm('დარწმუნებული ხარ, რომ გსურს ამ გადახდის დადასტურება?');">
+
+                            <button
+                                type="submit"
+                                class="action-btn approve">
+                                ✓ მიღება
+                            </button>
+
+                        </form>
+
+
+                        <form method="POST"
+                              action="{{ url_for('reject_payment', payment_id=payment.id) }}"
+                              onsubmit="return confirm('დარწმუნებული ხარ, რომ გსურს ამ მოთხოვნის უარყოფა?');">
+
+                            <button
+                                type="submit"
+                                class="action-btn reject">
+                                ✕ უარყოფა
+                            </button>
+
+                        </form>
+
+                        {% else %}
+
+                        <span class="status {{ payment.status }}">
+                            {% if payment.status == "approved" %}
+                                დამტკიცებული
+                            {% elif payment.status == "rejected" %}
+                                უარყოფილი
+                            {% else %}
+                                {{ payment.status }}
+                            {% endif %}
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    მომლოდინე მოთხოვნები არ არის
+                </h3>
+
+                <p>
+                    ამ ეტაპზე დასამუშავებელი გადახდა არ არსებობს.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         USERS
+    ========================================== -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <div class="section-title">
+
+                <div class="section-title-icon">
+                    👥
+                </div>
+
+                <div>
+
+                    <h2>
+                        მომხმარებლები
+                    </h2>
+
+                    <p>
+                        ანგარიშების მიმდინარე მდგომარეობა
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="glass">
+
+            {% if users is defined and users %}
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+
+                        <th>
+                            მომხმარებელი
+                        </th>
+
+                        <th>
+                            კრედიტები
+                        </th>
+
+                        <th>
+                            სტატუსი
+                        </th>
+
+                        <th>
+                            რეგისტრაცია
+                        </th>
+
+                        <th>
+                            ტიპი
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for item in users %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="table-user">
+
+                                <div class="mini-avatar">
+                                    {{ item.username[0]|upper if item.username else "U" }}
+                                </div>
+
+                                <span>
+                                    {{ item.username|default("—") }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="credits-number">
+                                {{ item.credits|default(0) }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if item.active|default(true) %}
+
+                                <span class="active">
+                                    ● აქტიური
+                                </span>
+
+                            {% else %}
+
+                                <span class="inactive">
+                                    ● შეჩერებული
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ item.created_at|default("—") }}
+                        </td>
+
+
+                        <td>
+
+                            {% if item.is_admin|default(false) %}
+
+                                <span class="status approved">
+                                    ADMIN
+                                </span>
+
+                            {% else %}
+
+                                <span class="status pending">
+                                    USER
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    👤
+                </div>
+
+                <h3>
+                    მომხმარებლები ვერ მოიძებნა
+                </h3>
+
+                <p>
+                    მონაცემები ჯერ არ არის ხელმისაწვდომი.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        DARKSEARCH • Administrator Control Center
+    </footer>
+
+</main>
+
+
+<script>
+
+    /*
+     * Automatically hide flash messages
+     * after a few seconds.
+     */
+
+    setTimeout(() => {
+
+        document.querySelectorAll(".flash").forEach(element => {
+
+            element.style.transition = "opacity .4s";
+
+            element.style.opacity = "0";
+
+            setTimeout(() => {
+                element.remove();
+            }, 450);
+
+        });
+
+    }, 5000);
+
+
+    /*
+     * Small visual effect for buttons.
+     */
+
+    document.querySelectorAll(".action-btn").forEach(button => {
+
+        button.addEventListener("click", function() {
+
+            if (this.form) {
+
+                this.style.opacity = ".65";
+                this.style.pointerEvents = "none";
+
+            }
+
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
