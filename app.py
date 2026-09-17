@@ -1,3 +1,9 @@
+# ============================================================
+# DarkSearch Portal - app.py
+# Flask + Turso
+# Secure authentication / credits / payments / admin
+# ============================================================
+
 import os
 import secrets
 from datetime import datetime, timedelta
@@ -17,19 +23,31 @@ from flask import (
     jsonify
 )
 
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
 from dotenv import load_dotenv
 
 
 # ============================================================
-# CONFIG
+# ENVIRONMENT
 # ============================================================
 
 load_dotenv()
 
+# Turso may use HTTPS with a self-signed/intermediate cert
+# in some environments. Keep warning disabled because
+# verify=False is used below.
 urllib3.disable_warnings(
     urllib3.exceptions.InsecureRequestWarning
 )
+
+
+# ============================================================
+# FLASK CONFIG
+# ============================================================
 
 app = Flask(__name__)
 
@@ -38,44 +56,64 @@ app.secret_key = os.getenv(
     secrets.token_hex(32)
 )
 
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
+app.permanent_session_lifetime = timedelta(days=30)
 
-TURSO_DATABASE_URL = os.getenv(
-    "TURSO_DATABASE_URL",
-    ""
-).strip()
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-TURSO_AUTH_TOKEN = os.getenv(
-    "TURSO_AUTH_TOKEN",
-    ""
-).strip()
+# Render is HTTPS in production.
+# This automatically makes the session cookie secure there.
+if os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"):
+    app.config["SESSION_COOKIE_SECURE"] = True
+
+
+# ============================================================
+# TURSO CONFIG
+# ============================================================
+
+TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN")
 
 if not TURSO_DATABASE_URL:
-    raise RuntimeError("TURSO_DATABASE_URL is missing")
+    raise RuntimeError(
+        "TURSO_DATABASE_URL environment variable is missing."
+    )
 
 if not TURSO_AUTH_TOKEN:
-    raise RuntimeError("TURSO_AUTH_TOKEN is missing")
+    raise RuntimeError(
+        "TURSO_AUTH_TOKEN environment variable is missing."
+    )
 
 
-# ============================================================
-# TURSO
-# ============================================================
+# Convert:
+# libsql://database-name.turso.io
+#
+# into:
+# https://database-name.turso.io/v2/pipeline
 
-TURSO_HTTP_URL = TURSO_DATABASE_URL.replace(
-    "libsql://",
-    "https://"
-).rstrip("/")
+TURSO_HTTP_URL = (
+    TURSO_DATABASE_URL
+    .replace("libsql://", "https://")
+    .rstrip("/")
+)
 
 TURSO_PIPELINE_URL = TURSO_HTTP_URL + "/v2/pipeline"
 
 
+# ============================================================
+# TURSO EXECUTOR
+# ============================================================
+
 def turso_execute(sql, params=None):
     """
-    Execute a SQL statement through Turso HTTP Pipeline API.
+    Execute one SQL statement through Turso HTTP pipeline.
 
     IMPORTANT:
-    Turso expects the bind argument 'value' to be a string,
-    even when the argument type is integer/float.
+    All non-null bind parameters are sent as TEXT.
+    Numeric values are explicitly CAST in SQL where necessary.
+
+    This avoids the JSON integer parsing problem that was
+    appearing in Render logs.
     """
 
     if params is None:
@@ -88,24 +126,6 @@ def turso_execute(sql, params=None):
         if value is None:
             args.append({
                 "type": "null"
-            })
-
-        elif isinstance(value, bool):
-            args.append({
-                "type": "integer",
-                "value": "1" if value else "0"
-            })
-
-        elif isinstance(value, int):
-            args.append({
-                "type": "integer",
-                "value": str(value)
-            })
-
-        elif isinstance(value, float):
-            args.append({
-                "type": "float",
-                "value": str(value)
             })
 
         else:
@@ -126,26 +146,38 @@ def turso_execute(sql, params=None):
         ]
     }
 
-    response = requests.post(
-        TURSO_PIPELINE_URL,
-        headers={
-            "Authorization": f"Bearer {TURSO_AUTH_TOKEN}",
-            "Content-Type": "application/json"
-        },
-        json=payload,
-        timeout=30,
-        verify=False
-    )
+    try:
+
+        response = requests.post(
+            TURSO_PIPELINE_URL,
+            headers={
+                "Authorization": f"Bearer {TURSO_AUTH_TOKEN}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=30,
+            verify=False
+        )
+
+    except requests.RequestException as e:
+
+        raise RuntimeError(
+            f"Turso connection error: {e}"
+        )
 
     if response.status_code != 200:
+
         raise RuntimeError(
             f"Turso HTTP error {response.status_code}: "
             f"{response.text}"
         )
 
     try:
+
         data = response.json()
+
     except Exception:
+
         raise RuntimeError(
             f"Turso returned invalid JSON: {response.text}"
         )
@@ -153,6 +185,7 @@ def turso_execute(sql, params=None):
     results = data.get("results", [])
 
     if not results:
+
         raise RuntimeError(
             f"Turso returned no results: {data}"
         )
@@ -160,14 +193,17 @@ def turso_execute(sql, params=None):
     first = results[0]
 
     if first.get("type") != "ok":
+
         raise RuntimeError(
             f"Turso query error: {first}"
         )
 
     response_data = first.get("response", {})
+
     result = response_data.get("result")
 
     if result is None:
+
         raise RuntimeError(
             f"Turso result missing: {first}"
         )
@@ -176,12 +212,95 @@ def turso_execute(sql, params=None):
 
 
 # ============================================================
+# ROW HELPERS
+# ============================================================
+
+def turso_value(cell):
+
+    """
+    Convert Turso cell object into a normal Python value.
+    """
+
+    if cell is None:
+        return None
+
+    if isinstance(cell, dict):
+
+        cell_type = cell.get("type")
+
+        if cell_type == "null":
+            return None
+
+        return cell.get("value")
+
+    return cell
+
+
+def turso_rows(result):
+
+    """
+    Convert Turso rows into list of dictionaries.
+    """
+
+    columns = result.get("cols", [])
+    rows = result.get("rows", [])
+
+    column_names = []
+
+    for column in columns:
+
+        if isinstance(column, dict):
+            column_names.append(
+                column.get("name", "")
+            )
+        else:
+            column_names.append(str(column))
+
+    output = []
+
+    for row in rows:
+
+        values = [
+            turso_value(cell)
+            for cell in row
+        ]
+
+        item = {}
+
+        for index, name in enumerate(column_names):
+
+            if index < len(values):
+                item[name] = values[index]
+            else:
+                item[name] = None
+
+        output.append(item)
+
+    return output
+
+
+def as_int(value, default=0):
+
+    try:
+        return int(value)
+
+    except (TypeError, ValueError):
+
+        return default
+
+
+# ============================================================
 # DATABASE INITIALIZATION
 # ============================================================
 
 def initialize_app_tables():
 
-    turso_execute("""
+    # --------------------------------------------------------
+    # USERS
+    # --------------------------------------------------------
+
+    turso_execute(
+        """
         CREATE TABLE IF NOT EXISTS app_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
@@ -190,9 +309,15 @@ def initialize_app_tables():
             is_admin INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL
         )
-    """)
+        """
+    )
 
-    turso_execute("""
+    # --------------------------------------------------------
+    # PURCHASE REQUESTS
+    # --------------------------------------------------------
+
+    turso_execute(
+        """
         CREATE TABLE IF NOT EXISTS purchase_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -203,11 +328,18 @@ def initialize_app_tables():
             status TEXT NOT NULL DEFAULT 'pending',
             created_at TEXT NOT NULL,
             processed_at TEXT,
-            FOREIGN KEY(user_id) REFERENCES app_users(id)
+            FOREIGN KEY(user_id)
+                REFERENCES app_users(id)
         )
-    """)
+        """
+    )
 
-    turso_execute("""
+    # --------------------------------------------------------
+    # NOTIFICATIONS
+    # --------------------------------------------------------
+
+    turso_execute(
+        """
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -215,43 +347,45 @@ def initialize_app_tables():
             notification_type TEXT NOT NULL,
             is_read INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
-            FOREIGN KEY(user_id) REFERENCES app_users(id)
+            FOREIGN KEY(user_id)
+                REFERENCES app_users(id)
         )
-    """)
+        """
+    )
 
-    turso_execute("""
+    # --------------------------------------------------------
+    # SEARCH LOGS
+    # --------------------------------------------------------
+
+    turso_execute(
+        """
         CREATE TABLE IF NOT EXISTS search_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             created_at TEXT NOT NULL,
-            FOREIGN KEY(user_id) REFERENCES app_users(id)
+            FOREIGN KEY(user_id)
+                REFERENCES app_users(id)
         )
-    """)
+        """
+    )
 
     print("[OK] Application tables ready")
 
 
 # ============================================================
-# ADMIN
+# ADMIN INITIALIZATION
 # ============================================================
 
 def ensure_admin():
 
-    admin_username = os.getenv(
-        "ADMIN_USERNAME",
-        ""
-    ).strip()
-
-    admin_password = os.getenv(
-        "ADMIN_PASSWORD",
-        ""
-    )
+    admin_username = os.getenv("ADMIN_USERNAME")
+    admin_password = os.getenv("ADMIN_PASSWORD")
 
     if not admin_username or not admin_password:
 
         print(
-            "[WARNING] ADMIN_USERNAME / ADMIN_PASSWORD "
-            "not configured"
+            "[WARNING] ADMIN_USERNAME or ADMIN_PASSWORD "
+            "is not configured."
         )
 
         return
@@ -266,45 +400,62 @@ def ensure_admin():
         [admin_username]
     )
 
-    rows = result.get("rows", [])
+    rows = turso_rows(result)
+
+    # --------------------------------------------------------
+    # ADMIN ALREADY EXISTS
+    # --------------------------------------------------------
 
     if rows:
+
+        admin_id = as_int(rows[0].get("id"))
 
         turso_execute(
             """
             UPDATE app_users
-            SET is_admin = 1
-            WHERE username = ?
+            SET is_admin = CAST(? AS INTEGER)
+            WHERE id = CAST(? AS INTEGER)
             """,
-            [admin_username]
+            ["1", str(admin_id)]
         )
 
-        print("[OK] Admin account already exists")
+        print("[OK] Admin account verified")
 
         return
+
+    # --------------------------------------------------------
+    # CREATE ADMIN
+    # --------------------------------------------------------
 
     password_hash = generate_password_hash(
         admin_password
     )
 
+    now = datetime.utcnow().isoformat()
+
     turso_execute(
         """
-        INSERT INTO app_users
-        (
+        INSERT INTO app_users (
             username,
             password_hash,
             credits,
             is_admin,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (
+            ?,
+            ?,
+            CAST(? AS INTEGER),
+            CAST(? AS INTEGER),
+            ?
+        )
         """,
         [
             admin_username,
             password_hash,
-            999999999,
-            1,
-            datetime.utcnow().isoformat()
+            "999999999",
+            "1",
+            now
         ]
     )
 
@@ -329,31 +480,31 @@ def current_user():
             SELECT
                 id,
                 username,
+                password_hash,
                 credits,
-                is_admin
+                is_admin,
+                created_at
             FROM app_users
-            WHERE id = ?
+            WHERE id = CAST(? AS INTEGER)
             LIMIT 1
             """,
-            [user_id]
+            [str(user_id)]
         )
 
-        rows = result.get("rows", [])
+        rows = turso_rows(result)
 
         if not rows:
-
-            session.clear()
-
             return None
 
-        row = rows[0]
+        user = rows[0]
 
-        return {
-            "id": int(row[0]["value"]),
-            "username": row[1]["value"],
-            "credits": int(row[2]["value"]),
-            "is_admin": int(row[3]["value"])
-        }
+        user["id"] = as_int(user.get("id"))
+        user["credits"] = as_int(user.get("credits"))
+        user["is_admin"] = as_int(
+            user.get("is_admin")
+        )
+
+        return user
 
     except Exception as e:
 
@@ -362,13 +513,11 @@ def current_user():
             repr(e)
         )
 
-        session.clear()
-
         return None
 
 
 # ============================================================
-# AUTH DECORATORS
+# LOGIN REQUIRED
 # ============================================================
 
 def login_required(view):
@@ -380,8 +529,10 @@ def login_required(view):
 
         if not user:
 
+            session.clear()
+
             flash(
-                "გთხოვთ, ჯერ შეხვიდეთ ანგარიშში.",
+                "გთხოვთ, ჯერ გაიაროთ ავტორიზაცია.",
                 "warning"
             )
 
@@ -394,6 +545,10 @@ def login_required(view):
     return wrapped
 
 
+# ============================================================
+# ADMIN REQUIRED
+# ============================================================
+
 def admin_required(view):
 
     @wraps(view)
@@ -403,14 +558,16 @@ def admin_required(view):
 
         if not user:
 
+            session.clear()
+
             return redirect(
                 url_for("login")
             )
 
-        if not user["is_admin"]:
+        if not user.get("is_admin"):
 
             flash(
-                "ადმინისტრატორის წვდომა არ გაქვთ.",
+                "ადმინისტრატორის უფლებები არ გაქვთ.",
                 "danger"
             )
 
@@ -428,15 +585,10 @@ def admin_required(view):
 # ============================================================
 
 @app.context_processor
-def inject_user():
-
-    try:
-        user = current_user()
-    except Exception:
-        user = None
+def inject_globals():
 
     return {
-        "current_user": user
+        "current_user": current_user()
     }
 
 
@@ -478,74 +630,74 @@ def register():
 
     if request.method == "POST":
 
+        username = (
+            request.form.get("username", "")
+            .strip()
+        )
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+        # ----------------------------------------------------
+        # VALIDATION
+        # ----------------------------------------------------
+
+        if len(username) < 3:
+
+            flash(
+                "მომხმარებლის სახელი მინიმუმ 3 სიმბოლო უნდა იყოს.",
+                "danger"
+            )
+
+            return render_template(
+                "register.html"
+            )
+
+        if len(username) > 50:
+
+            flash(
+                "მომხმარებლის სახელი ძალიან გრძელია.",
+                "danger"
+            )
+
+            return render_template(
+                "register.html"
+            )
+
+        if len(password) < 8:
+
+            flash(
+                "პაროლი მინიმუმ 8 სიმბოლო უნდა იყოს.",
+                "danger"
+            )
+
+            return render_template(
+                "register.html"
+            )
+
+        if password != confirm_password:
+
+            flash(
+                "პაროლები ერთმანეთს არ ემთხვევა.",
+                "danger"
+            )
+
+            return render_template(
+                "register.html"
+            )
+
+        # ----------------------------------------------------
+        # CHECK USER
+        # ----------------------------------------------------
+
         try:
-
-            username = request.form.get(
-                "username",
-                ""
-            ).strip()
-
-            password = request.form.get(
-                "password",
-                ""
-            )
-
-            confirm_password = request.form.get(
-                "confirm_password",
-                ""
-            )
-
-            # ----------------------------------------
-            # VALIDATION
-            # ----------------------------------------
-
-            if len(username) < 3:
-
-                flash(
-                    "მომხმარებლის სახელი მინიმუმ 3 სიმბოლო უნდა იყოს.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("register")
-                )
-
-            if len(username) > 50:
-
-                flash(
-                    "მომხმარებლის სახელი ძალიან გრძელია.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("register")
-                )
-
-            if len(password) < 8:
-
-                flash(
-                    "პაროლი მინიმუმ 8 სიმბოლო უნდა იყოს.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("register")
-                )
-
-            if password != confirm_password:
-
-                flash(
-                    "პაროლები ერთმანეთს არ ემთხვევა.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("register")
-                )
-
-            # ----------------------------------------
-            # CHECK USERNAME
-            # ----------------------------------------
 
             result = turso_execute(
                 """
@@ -557,52 +709,55 @@ def register():
                 [username]
             )
 
-            if result.get("rows"):
+            if turso_rows(result):
 
                 flash(
                     "ეს მომხმარებლის სახელი უკვე დაკავებულია.",
                     "danger"
                 )
 
-                return redirect(
-                    url_for("register")
+                return render_template(
+                    "register.html"
                 )
 
-            # ----------------------------------------
+            # ------------------------------------------------
             # CREATE USER
-            # ----------------------------------------
+            # ------------------------------------------------
 
             password_hash = generate_password_hash(
                 password
             )
 
+            now = datetime.utcnow().isoformat()
+
             turso_execute(
                 """
-                INSERT INTO app_users
-                (
+                INSERT INTO app_users (
                     username,
                     password_hash,
                     credits,
                     is_admin,
                     created_at
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (
+                    ?,
+                    ?,
+                    CAST(? AS INTEGER),
+                    CAST(? AS INTEGER),
+                    ?
+                )
                 """,
                 [
                     username,
                     password_hash,
-                    0,
-                    0,
-                    datetime.utcnow().isoformat()
+                    "0",
+                    "0",
+                    now
                 ]
             )
 
-            print(
-                f"[OK] New user registered: {username}"
-            )
-
             flash(
-                "ანგარიში წარმატებით შეიქმნა. ახლა შედით.",
+                "რეგისტრაცია წარმატებით დასრულდა.",
                 "success"
             )
 
@@ -618,13 +773,8 @@ def register():
             )
 
             flash(
-                "რეგისტრაციისას მოხდა შეცდომა. "
-                "გთხოვთ, სცადოთ მოგვიანებით.",
+                "რეგისტრაციისას მოხდა შეცდომა.",
                 "danger"
-            )
-
-            return redirect(
-                url_for("register")
             )
 
     return render_template(
@@ -650,28 +800,17 @@ def login():
 
     if request.method == "POST":
 
+        username = (
+            request.form.get("username", "")
+            .strip()
+        )
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
         try:
-
-            username = request.form.get(
-                "username",
-                ""
-            ).strip()
-
-            password = request.form.get(
-                "password",
-                ""
-            )
-
-            if not username or not password:
-
-                flash(
-                    "შეავსეთ ყველა ველი.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("login")
-                )
 
             result = turso_execute(
                 """
@@ -679,6 +818,7 @@ def login():
                     id,
                     username,
                     password_hash,
+                    credits,
                     is_admin
                 FROM app_users
                 WHERE username = ?
@@ -687,10 +827,7 @@ def login():
                 [username]
             )
 
-            rows = result.get(
-                "rows",
-                []
-            )
+            rows = turso_rows(result)
 
             if not rows:
 
@@ -699,22 +836,14 @@ def login():
                     "danger"
                 )
 
-                return redirect(
-                    url_for("login")
+                return render_template(
+                    "login.html"
                 )
 
-            row = rows[0]
-
-            user_id = int(
-                row[0]["value"]
-            )
-
-            db_username = row[1]["value"]
-
-            password_hash = row[2]["value"]
+            user = rows[0]
 
             if not check_password_hash(
-                password_hash,
+                user["password_hash"],
                 password
             ):
 
@@ -723,20 +852,19 @@ def login():
                     "danger"
                 )
 
-                return redirect(
-                    url_for("login")
+                return render_template(
+                    "login.html"
                 )
 
             session.clear()
 
-            session["user_id"] = user_id
-            session["username"] = db_username
-
             session.permanent = True
 
-            print(
-                f"[OK] User logged in: {db_username}"
+            session["user_id"] = as_int(
+                user["id"]
             )
+
+            session["username"] = user["username"]
 
             return redirect(
                 url_for("dashboard")
@@ -750,12 +878,8 @@ def login():
             )
 
             flash(
-                "შესვლისას მოხდა შეცდომა.",
+                "ავტორიზაციისას მოხდა შეცდომა.",
                 "danger"
-            )
-
-            return redirect(
-                url_for("login")
             )
 
     return render_template(
@@ -771,6 +895,11 @@ def login():
 def logout():
 
     session.clear()
+
+    flash(
+        "თქვენ გამოხვედით სისტემიდან.",
+        "success"
+    )
 
     return redirect(
         url_for("index")
@@ -812,6 +941,16 @@ def search():
 # ============================================================
 # SEARCH API
 # ============================================================
+#
+# IMPORTANT:
+# The underlying database contains highly sensitive personal
+# information. Arbitrary public searching of those records is
+# intentionally NOT enabled here.
+#
+# If you later implement an authorized/legitimate search flow,
+# add strict access control, lawful-use restrictions,
+# audit logging, rate limiting and field minimization.
+# ============================================================
 
 @app.route(
     "/api/search",
@@ -822,18 +961,26 @@ def api_search():
 
     user = current_user()
 
-    if user["credits"] <= 0 and not user["is_admin"]:
+    if not user:
+
+        return jsonify({
+            "success": False,
+            "error": "ავტორიზაცია საჭიროა."
+        }), 401
+
+    if (
+        user["credits"] <= 0
+        and not user["is_admin"]
+    ):
 
         return jsonify({
             "success": False,
             "error": "ძებნის კრედიტები არ გაქვთ."
         }), 403
 
-    # Search against sensitive personal-data records
-    # is intentionally not exposed by this public deployment.
     return jsonify({
         "success": False,
-        "error": "საძიებო ფუნქცია ჯერ არ არის ჩართული."
+        "error": "საძიებო ფუნქცია ამ ეტაპზე გამორთულია."
     }), 501
 
 
@@ -850,54 +997,67 @@ def purchase_page():
         ""
     )
 
-    return render_template(
-        "purchase.html",
-        bank_account=bank_account
-    )
-
-
-# ============================================================
-# PURCHASE REQUEST
-# ============================================================
-
-@app.route(
-    "/purchase/request",
-    methods=["POST"]
-)
-@login_required
-def purchase_request():
-
-    user = current_user()
-
-    package = request.form.get(
-        "package",
-        ""
-    )
-
-    sender_name = request.form.get(
-        "sender_name",
-        ""
-    ).strip()
-
     packages = {
-
         "1": {
             "searches": 1,
             "amount": 2
         },
-
         "2": {
             "searches": 2,
             "amount": 3
         },
-
         "5": {
             "searches": 5,
             "amount": 8
         }
     }
 
-    if package not in packages:
+    return render_template(
+        "purchase.html",
+        bank_account=bank_account,
+        packages=packages
+    )
+
+
+# ============================================================
+# CREATE PURCHASE REQUEST
+# ============================================================
+
+@app.route(
+    "/purchase",
+    methods=["POST"]
+)
+@login_required
+def purchase():
+
+    user = current_user()
+
+    package_id = (
+        request.form.get("package", "")
+        .strip()
+    )
+
+    sender_name = (
+        request.form.get("sender_name", "")
+        .strip()
+    )
+
+    packages = {
+        "1": {
+            "searches": 1,
+            "amount": 2
+        },
+        "2": {
+            "searches": 2,
+            "amount": 3
+        },
+        "5": {
+            "searches": 5,
+            "amount": 8
+        }
+    }
+
+    if package_id not in packages:
 
         flash(
             "არასწორი პაკეტი.",
@@ -911,7 +1071,7 @@ def purchase_request():
     if not sender_name:
 
         flash(
-            "მიუთითეთ გადმომრიცხავის სახელი და გვარი.",
+            "მიუთითეთ გადამხდელის სახელი.",
             "danger"
         )
 
@@ -919,14 +1079,15 @@ def purchase_request():
             url_for("purchase_page")
         )
 
-    selected = packages[package]
+    package = packages[package_id]
 
     try:
 
+        now = datetime.utcnow().isoformat()
+
         turso_execute(
             """
-            INSERT INTO purchase_requests
-            (
+            INSERT INTO purchase_requests (
                 user_id,
                 username,
                 sender_name,
@@ -935,26 +1096,31 @@ def purchase_request():
                 status,
                 created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                CAST(? AS INTEGER),
+                ?,
+                ?,
+                CAST(? AS INTEGER),
+                CAST(? AS INTEGER),
+                ?,
+                ?
+            )
             """,
             [
-                user["id"],
+                str(user["id"]),
                 user["username"],
                 sender_name,
-                selected["searches"],
-                selected["amount"],
+                str(package["searches"]),
+                str(package["amount"]),
                 "pending",
-                datetime.utcnow().isoformat()
+                now
             ]
         )
 
-        print(
-            f"[OK] Purchase request created "
-            f"for user={user['username']}"
-        )
-
         flash(
-            "მოთხოვნა გაიგზავნა ადმინისტრატორთან.",
+            "გადახდის მოთხოვნა გაიგზავნა. "
+            "ადმინისტრატორის დადასტურების შემდეგ "
+            "კრედიტები დაგემატებათ.",
             "success"
         )
 
@@ -966,7 +1132,7 @@ def purchase_request():
         )
 
         flash(
-            "მოთხოვნის გაგზავნისას მოხდა შეცდომა.",
+            "გადახდის მოთხოვნის შექმნისას მოხდა შეცდომა.",
             "danger"
         )
 
@@ -976,209 +1142,191 @@ def purchase_request():
 
 
 # ============================================================
-# ADMIN PANEL
+# ADMIN PAGE
 # ============================================================
 
 @app.route("/admin")
 @admin_required
 def admin_page():
 
-    # ----------------------------------------
-    # USERS
-    # ----------------------------------------
+    try:
 
-    users_result = turso_execute(
-        """
-        SELECT
-            id,
-            username,
-            credits,
-            is_admin,
-            created_at
-        FROM app_users
-        ORDER BY id DESC
-        """
-    )
+        # ----------------------------------------------------
+        # USERS
+        # ----------------------------------------------------
 
-    users = []
+        users_result = turso_execute(
+            """
+            SELECT
+                id,
+                username,
+                credits,
+                is_admin,
+                created_at
+            FROM app_users
+            ORDER BY id DESC
+            """
+        )
 
-    for row in users_result.get(
-        "rows",
-        []
-    ):
+        users = turso_rows(
+            users_result
+        )
 
-        users.append({
+        for user in users:
 
-            "id": int(
-                row[0]["value"]
-            ),
+            user["id"] = as_int(
+                user.get("id")
+            )
 
-            "username": row[1]["value"],
+            user["credits"] = as_int(
+                user.get("credits")
+            )
 
-            "credits": int(
-                row[2]["value"]
-            ),
+            user["is_admin"] = as_int(
+                user.get("is_admin")
+            )
 
-            "is_admin": int(
-                row[3]["value"]
-            ),
+        # ----------------------------------------------------
+        # PURCHASE REQUESTS
+        # ----------------------------------------------------
 
-            "created_at": row[4]["value"]
-        })
+        payments_result = turso_execute(
+            """
+            SELECT
+                id,
+                user_id,
+                username,
+                sender_name,
+                package_searches,
+                amount,
+                status,
+                created_at,
+                processed_at
+            FROM purchase_requests
+            ORDER BY id DESC
+            """
+        )
 
+        payments = turso_rows(
+            payments_result
+        )
 
-    # ----------------------------------------
-    # PAYMENT REQUESTS
-    # ----------------------------------------
+        for payment in payments:
 
-    payments_result = turso_execute(
-        """
-        SELECT
-            id,
-            user_id,
-            username,
-            sender_name,
-            package_searches,
-            amount,
-            status,
-            created_at
-        FROM purchase_requests
-        ORDER BY id DESC
-        """
-    )
+            payment["id"] = as_int(
+                payment.get("id")
+            )
 
-    payments = []
+            payment["user_id"] = as_int(
+                payment.get("user_id")
+            )
 
-    for row in payments_result.get(
-        "rows",
-        []
-    ):
+            payment["package_searches"] = as_int(
+                payment.get("package_searches")
+            )
 
-        payments.append({
+            payment["amount"] = as_int(
+                payment.get("amount")
+            )
 
-            "id": int(
-                row[0]["value"]
-            ),
+        # ----------------------------------------------------
+        # STATISTICS
+        # ----------------------------------------------------
 
-            "user_id": int(
-                row[1]["value"]
-            ),
+        users_count_result = turso_execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM app_users
+            """
+        )
 
-            "username": row[2]["value"],
+        users_count_rows = turso_rows(
+            users_count_result
+        )
 
-            "sender_name": row[3]["value"],
+        users_count = 0
 
-            "searches": int(
-                row[4]["value"]
-            ),
+        if users_count_rows:
 
-            "price": int(
-                row[5]["value"]
-            ),
+            users_count = as_int(
+                users_count_rows[0].get("count")
+            )
 
-            "amount": int(
-                row[5]["value"]
-            ),
+        pending_count_result = turso_execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM purchase_requests
+            WHERE status = ?
+            """,
+            ["pending"]
+        )
 
-            "status": row[6]["value"],
+        pending_count_rows = turso_rows(
+            pending_count_result
+        )
 
-            "created_at": row[7]["value"]
-        })
+        pending_count = 0
 
+        if pending_count_rows:
 
-    # ----------------------------------------
-    # TOTAL USERS
-    # ----------------------------------------
+            pending_count = as_int(
+                pending_count_rows[0].get("count")
+            )
 
-    total_users_result = turso_execute(
-        """
-        SELECT COUNT(*)
-        FROM app_users
-        """
-    )
+        approved_count_result = turso_execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM purchase_requests
+            WHERE status = ?
+            """,
+            ["approved"]
+        )
 
-    total_users = int(
-        total_users_result["rows"][0][0]["value"]
-    )
+        approved_count_rows = turso_rows(
+            approved_count_result
+        )
 
+        approved_count = 0
 
-    # ----------------------------------------
-    # TOTAL CREDITS
-    # ----------------------------------------
+        if approved_count_rows:
 
-    total_credits_result = turso_execute(
-        """
-        SELECT COALESCE(SUM(credits), 0)
-        FROM app_users
-        """
-    )
+            approved_count = as_int(
+                approved_count_rows[0].get("count")
+            )
 
-    total_credits = int(
-        total_credits_result["rows"][0][0]["value"]
-    )
+        stats = {
+            "users": users_count,
+            "pending": pending_count,
+            "approved": approved_count
+        }
 
+        return render_template(
+            "admin.html",
+            users=users,
+            payments=payments,
+            purchase_requests=payments,
+            stats=stats
+        )
 
-    # ----------------------------------------
-    # PENDING PAYMENTS
-    # ----------------------------------------
+    except Exception as e:
 
-    pending_result = turso_execute(
-        """
-        SELECT COUNT(*)
-        FROM purchase_requests
-        WHERE status = 'pending'
-        """
-    )
+        print(
+            "[ADMIN PAGE ERROR]",
+            repr(e)
+        )
 
-    pending_payments = int(
-        pending_result["rows"][0][0]["value"]
-    )
+        flash(
+            "ადმინისტრატორის გვერდის ჩატვირთვისას მოხდა შეცდომა.",
+            "danger"
+        )
 
-
-    # ----------------------------------------
-    # SEARCH COUNT
-    # ----------------------------------------
-
-    searches_result = turso_execute(
-        """
-        SELECT COUNT(*)
-        FROM search_logs
-        """
-    )
-
-    total_searches = int(
-        searches_result["rows"][0][0]["value"]
-    )
-
-
-    stats = {
-
-        "total_users": total_users,
-
-        "total_credits": total_credits,
-
-        "pending_payments": pending_payments,
-
-        "total_searches": total_searches
-    }
-
-
-    return render_template(
-
-        "admin.html",
-
-        users=users,
-
-        payments=payments,
-
-        purchase_requests=payments,
-
-        stats=stats
-    )
+        return redirect(
+            url_for("dashboard")
+        )
 
 
 # ============================================================
-# ADMIN APPROVE
+# APPROVE PAYMENT
 # ============================================================
 
 @app.route(
@@ -1188,112 +1336,142 @@ def admin_page():
 @admin_required
 def approve_payment(request_id):
 
-    result = turso_execute(
-        """
-        SELECT
-            user_id,
-            package_searches,
-            status
-        FROM purchase_requests
-        WHERE id = ?
-        LIMIT 1
-        """,
-        [request_id]
-    )
+    try:
 
-    rows = result.get(
-        "rows",
-        []
-    )
+        result = turso_execute(
+            """
+            SELECT
+                id,
+                user_id,
+                package_searches,
+                status
+            FROM purchase_requests
+            WHERE id = CAST(? AS INTEGER)
+            LIMIT 1
+            """,
+            [str(request_id)]
+        )
 
-    if not rows:
+        rows = turso_rows(result)
+
+        if not rows:
+
+            flash(
+                "გადახდის მოთხოვნა ვერ მოიძებნა.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("admin_page")
+            )
+
+        payment = rows[0]
+
+        status = payment.get("status")
+
+        if status != "pending":
+
+            flash(
+                "ეს მოთხოვნა უკვე დამუშავებულია.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("admin_page")
+            )
+
+        user_id = as_int(
+            payment.get("user_id")
+        )
+
+        package_searches = as_int(
+            payment.get("package_searches")
+        )
+
+        now = datetime.utcnow().isoformat()
+
+        # ----------------------------------------------------
+        # ADD CREDITS
+        # ----------------------------------------------------
+
+        turso_execute(
+            """
+            UPDATE app_users
+            SET credits = credits + CAST(? AS INTEGER)
+            WHERE id = CAST(? AS INTEGER)
+            """,
+            [
+                str(package_searches),
+                str(user_id)
+            ]
+        )
+
+        # ----------------------------------------------------
+        # MARK PAYMENT APPROVED
+        # ----------------------------------------------------
+
+        turso_execute(
+            """
+            UPDATE purchase_requests
+            SET
+                status = ?,
+                processed_at = ?
+            WHERE id = CAST(? AS INTEGER)
+            """,
+            [
+                "approved",
+                now,
+                str(request_id)
+            ]
+        )
+
+        # ----------------------------------------------------
+        # NOTIFICATION
+        # ----------------------------------------------------
+
+        turso_execute(
+            """
+            INSERT INTO notifications (
+                user_id,
+                message,
+                notification_type,
+                is_read,
+                created_at
+            )
+            VALUES (
+                CAST(? AS INTEGER),
+                ?,
+                ?,
+                CAST(? AS INTEGER),
+                ?
+            )
+            """,
+            [
+                str(user_id),
+                f"გადახდა დადასტურდა. "
+                f"დაგემატათ {package_searches} კრედიტი.",
+                "payment_approved",
+                "0",
+                now
+            ]
+        )
 
         flash(
-            "მოთხოვნა ვერ მოიძებნა.",
+            "გადახდა წარმატებით დადასტურდა.",
+            "success"
+        )
+
+    except Exception as e:
+
+        print(
+            "[APPROVE ERROR]",
+            repr(e)
+        )
+
+        flash(
+            "გადახდის დადასტურებისას მოხდა შეცდომა.",
             "danger"
         )
-
-        return redirect(
-            url_for("admin_page")
-        )
-
-    row = rows[0]
-
-    user_id = int(
-        row[0]["value"]
-    )
-
-    searches = int(
-        row[1]["value"]
-    )
-
-    status = row[2]["value"]
-
-    if status != "pending":
-
-        flash(
-            "ეს მოთხოვნა უკვე დამუშავებულია.",
-            "warning"
-        )
-
-        return redirect(
-            url_for("admin_page")
-        )
-
-    # Add credits
-    turso_execute(
-        """
-        UPDATE app_users
-        SET credits = credits + ?
-        WHERE id = ?
-        """,
-        [
-            searches,
-            user_id
-        ]
-    )
-
-    # Mark payment approved
-    turso_execute(
-        """
-        UPDATE purchase_requests
-        SET
-            status = 'approved',
-            processed_at = ?
-        WHERE id = ?
-        """,
-        [
-            datetime.utcnow().isoformat(),
-            request_id
-        ]
-    )
-
-    # Notification
-    turso_execute(
-        """
-        INSERT INTO notifications
-        (
-            user_id,
-            message,
-            notification_type,
-            is_read,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        [
-            user_id,
-            f"ადმინისტრატორმა თქვენი მოთხოვნა დაადასტურა. დაგემატათ {searches} კრედიტი.",
-            "success",
-            0,
-            datetime.utcnow().isoformat()
-        ]
-    )
-
-    flash(
-        "მოთხოვნა დადასტურდა.",
-        "success"
-    )
 
     return redirect(
         url_for("admin_page")
@@ -1301,7 +1479,7 @@ def approve_payment(request_id):
 
 
 # ============================================================
-# ADMIN REJECT
+# REJECT PAYMENT
 # ============================================================
 
 @app.route(
@@ -1311,92 +1489,118 @@ def approve_payment(request_id):
 @admin_required
 def reject_payment(request_id):
 
-    result = turso_execute(
-        """
-        SELECT
-            user_id,
-            status
-        FROM purchase_requests
-        WHERE id = ?
-        LIMIT 1
-        """,
-        [request_id]
-    )
+    try:
 
-    rows = result.get(
-        "rows",
-        []
-    )
+        result = turso_execute(
+            """
+            SELECT
+                id,
+                user_id,
+                status
+            FROM purchase_requests
+            WHERE id = CAST(? AS INTEGER)
+            LIMIT 1
+            """,
+            [str(request_id)]
+        )
 
-    if not rows:
+        rows = turso_rows(result)
+
+        if not rows:
+
+            flash(
+                "გადახდის მოთხოვნა ვერ მოიძებნა.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("admin_page")
+            )
+
+        payment = rows[0]
+
+        if payment.get("status") != "pending":
+
+            flash(
+                "ეს მოთხოვნა უკვე დამუშავებულია.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("admin_page")
+            )
+
+        user_id = as_int(
+            payment.get("user_id")
+        )
+
+        now = datetime.utcnow().isoformat()
+
+        # ----------------------------------------------------
+        # REJECT
+        # ----------------------------------------------------
+
+        turso_execute(
+            """
+            UPDATE purchase_requests
+            SET
+                status = ?,
+                processed_at = ?
+            WHERE id = CAST(? AS INTEGER)
+            """,
+            [
+                "rejected",
+                now,
+                str(request_id)
+            ]
+        )
+
+        # ----------------------------------------------------
+        # NOTIFICATION
+        # ----------------------------------------------------
+
+        turso_execute(
+            """
+            INSERT INTO notifications (
+                user_id,
+                message,
+                notification_type,
+                is_read,
+                created_at
+            )
+            VALUES (
+                CAST(? AS INTEGER),
+                ?,
+                ?,
+                CAST(? AS INTEGER),
+                ?
+            )
+            """,
+            [
+                str(user_id),
+                "გადახდის მოთხოვნა უარყოფილია.",
+                "payment_rejected",
+                "0",
+                now
+            ]
+        )
 
         flash(
-            "მოთხოვნა ვერ მოიძებნა.",
+            "გადახდის მოთხოვნა უარყოფილია.",
+            "success"
+        )
+
+    except Exception as e:
+
+        print(
+            "[REJECT ERROR]",
+            repr(e)
+        )
+
+        flash(
+            "მოთხოვნის უარყოფისას მოხდა შეცდომა.",
             "danger"
         )
-
-        return redirect(
-            url_for("admin_page")
-        )
-
-    user_id = int(
-        rows[0][0]["value"]
-    )
-
-    status = rows[0][1]["value"]
-
-    if status != "pending":
-
-        flash(
-            "ეს მოთხოვნა უკვე დამუშავებულია.",
-            "warning"
-        )
-
-        return redirect(
-            url_for("admin_page")
-        )
-
-    # Mark rejected
-    turso_execute(
-        """
-        UPDATE purchase_requests
-        SET
-            status = 'rejected',
-            processed_at = ?
-        WHERE id = ?
-        """,
-        [
-            datetime.utcnow().isoformat(),
-            request_id
-        ]
-    )
-
-    # Notification
-    turso_execute(
-        """
-        INSERT INTO notifications
-        (
-            user_id,
-            message,
-            notification_type,
-            is_read,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        [
-            user_id,
-            "ადმინისტრატორმა თქვენი მოთხოვნა უარყო.",
-            "error",
-            0,
-            datetime.utcnow().isoformat()
-        ]
-    )
-
-    flash(
-        "მოთხოვნა უარყოფილია.",
-        "success"
-    )
 
     return redirect(
         url_for("admin_page")
@@ -1404,68 +1608,128 @@ def reject_payment(request_id):
 
 
 # ============================================================
-# NOTIFICATIONS
+# NOTIFICATIONS API
 # ============================================================
 
 @app.route(
-    "/api/notifications"
+    "/api/notifications",
+    methods=["GET"]
 )
 @login_required
-def notifications():
+def api_notifications():
 
     user = current_user()
 
-    result = turso_execute(
-        """
-        SELECT
-            id,
-            message,
-            notification_type,
-            is_read,
-            created_at
-        FROM notifications
-        WHERE user_id = ?
-        ORDER BY id DESC
-        LIMIT 20
-        """,
-        [user["id"]]
-    )
+    if not user:
 
-    notifications_list = []
+        return jsonify({
+            "success": False,
+            "error": "ავტორიზაცია საჭიროა."
+        }), 401
 
-    for row in result.get(
-        "rows",
-        []
-    ):
+    try:
 
-        notifications_list.append({
+        result = turso_execute(
+            """
+            SELECT
+                id,
+                message,
+                notification_type,
+                is_read,
+                created_at
+            FROM notifications
+            WHERE user_id = CAST(? AS INTEGER)
+            ORDER BY id DESC
+            LIMIT 20
+            """,
+            [str(user["id"])]
+        )
 
-            "id": int(
-                row[0]["value"]
-            ),
+        notifications = turso_rows(
+            result
+        )
 
-            "message": row[1]["value"],
+        for notification in notifications:
 
-            "type": row[2]["value"],
+            notification["id"] = as_int(
+                notification.get("id")
+            )
 
-            "is_read": int(
-                row[3]["value"]
-            ),
+            notification["is_read"] = as_int(
+                notification.get("is_read")
+            )
 
-            "created_at": row[4]["value"]
+        return jsonify({
+            "success": True,
+            "notifications": notifications
         })
 
-    return jsonify({
+    except Exception as e:
 
-        "success": True,
+        print(
+            "[NOTIFICATIONS ERROR]",
+            repr(e)
+        )
 
-        "notifications":
-            notifications_list
-    })
+        return jsonify({
+            "success": False,
+            "error": "შეტყობინებების ჩატვირთვა ვერ მოხერხდა."
+        }), 500
 
 
 # ============================================================
-# HEALTH
+# MARK NOTIFICATION AS READ
+# ============================================================
+
+@app.route(
+    "/api/notifications/<int:notification_id>/read",
+    methods=["POST"]
+)
+@login_required
+def mark_notification_read(notification_id):
+
+    user = current_user()
+
+    if not user:
+
+        return jsonify({
+            "success": False
+        }), 401
+
+    try:
+
+        turso_execute(
+            """
+            UPDATE notifications
+            SET is_read = CAST(? AS INTEGER)
+            WHERE id = CAST(? AS INTEGER)
+              AND user_id = CAST(? AS INTEGER)
+            """,
+            [
+                "1",
+                str(notification_id),
+                str(user["id"])
+            ]
+        )
+
+        return jsonify({
+            "success": True
+        })
+
+    except Exception as e:
+
+        print(
+            "[NOTIFICATION READ ERROR]",
+            repr(e)
+        )
+
+        return jsonify({
+            "success": False
+        }), 500
+
+
+# ============================================================
+# HEALTH CHECK
 # ============================================================
 
 @app.route("/health")
@@ -1473,16 +1737,16 @@ def health():
 
     try:
 
-        turso_execute(
+        result = turso_execute(
             "SELECT 1 AS test"
         )
 
+        rows = turso_rows(result)
+
         return jsonify({
-
             "status": "ok",
-
-            "database": True
-
+            "database": True,
+            "test": rows
         })
 
     except Exception as e:
@@ -1493,12 +1757,90 @@ def health():
         )
 
         return jsonify({
-
             "status": "error",
-
             "database": False
-
         }), 500
+
+
+# ============================================================
+# ERROR HANDLERS
+# ============================================================
+
+@app.errorhandler(404)
+def not_found(error):
+
+    return render_template(
+        "index.html"
+    ), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+
+    print(
+        "[500 ERROR]",
+        repr(error)
+    )
+
+    return """
+    <!DOCTYPE html>
+    <html lang="ka">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+        <title>DarkSearch - Error</title>
+        <style>
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #050505;
+                color: white;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            .box {
+                padding: 40px;
+                border: 1px solid rgba(255,255,255,.1);
+                border-radius: 24px;
+                background: rgba(255,255,255,.04);
+                backdrop-filter: blur(20px);
+            }
+
+            h1 {
+                color: #d4af37;
+            }
+
+            a {
+                color: #d4af37;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="box">
+
+            <h1>500</h1>
+
+            <p>
+                სერვერზე დროებითი შეცდომა მოხდა.
+            </p>
+
+            <a href="/">
+                მთავარ გვერდზე დაბრუნება
+            </a>
+
+        </div>
+
+    </body>
+    </html>
+    """, 500
 
 
 # ============================================================
@@ -1527,7 +1869,7 @@ except Exception as e:
 
 
 # ============================================================
-# RUN
+# LOCAL RUN
 # ============================================================
 
 if __name__ == "__main__":
