@@ -1,1 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
+    <title>DarkSearch | რეგისტრაცია</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f5d76e;
+            --gold-dark: #8f6f18;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px;
+
+            font-family: "Inter", sans-serif;
+            color: #f5f5f5;
+
+            background:
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(212,175,55,.10),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(212,175,55,.08),
+                    transparent 32%
+                ),
+                #030303;
+
+            overflow-x: hidden;
+        }
+
+        /* BACKGROUND */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+
+            opacity: .13;
+
+            background-image:
+                linear-gradient(
+                    rgba(212,175,55,.075) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(212,175,55,.075) 1px,
+                    transparent 1px
+                );
+
+            background-size: 65px 65px;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: .18;
+
+            animation: floating 10s ease-in-out infinite;
+        }
+
+        .orb-one {
+            width: 320px;
+            height: 320px;
+            left: -160px;
+            top: -100px;
+            background: #d4af37;
+        }
+
+        .orb-two {
+            width: 300px;
+            height: 300px;
+            right: -130px;
+            bottom: -100px;
+            background: #8f6f18;
+            animation-delay: -4s;
+        }
+
+        .orb-three {
+            width: 160px;
+            height: 160px;
+            left: 50%;
+            top: 10%;
+            background: #f5d76e;
+            opacity: .07;
+            animation-delay: -7s;
+        }
+
+        @keyframes floating {
+            0%, 100% {
+                transform: translate3d(0,0,0);
+            }
+
+            50% {
+                transform: translate3d(30px,-25px,0);
+            }
+        }
+
+        /* PAGE */
+
+        .page {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* BACK */
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-bottom: 17px;
+            padding: 8px 12px;
+
+            color: #858585;
+            text-decoration: none;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 10px;
+
+            background: rgba(255,255,255,.025);
+
+            transition: .25s ease;
+        }
+
+        .back:hover {
+            color: var(--gold-light);
+
+            border-color: rgba(212,175,55,.25);
+
+            background: rgba(212,175,55,.05);
+
+            transform: translateX(-3px);
+        }
+
+        /* CARD */
+
+        .card {
+            position: relative;
+
+            padding: 1px;
+
+            border-radius: 30px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(212,175,55,.45),
+                    rgba(255,255,255,.06),
+                    rgba(212,175,55,.13)
+                );
+
+            box-shadow:
+                0 45px 110px rgba(0,0,0,.72),
+                0 0 80px rgba(212,175,55,.055);
+
+            animation:
+                cardIn .7s cubic-bezier(.2,.8,.2,1);
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(25px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .card-inner {
+            position: relative;
+
+            padding: 36px;
+
+            border-radius: 29px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,17,17,.97),
+                    rgba(5,5,5,.985)
+                );
+
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+
+            overflow: hidden;
+        }
+
+        .card-inner::before {
+            content: "";
+
+            position: absolute;
+
+            width: 260px;
+            height: 260px;
+
+            top: -160px;
+            right: -110px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(212,175,55,.12),
+                    transparent 68%
+                );
+
+            pointer-events: none;
+        }
+
+        /* LOGO */
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-icon {
+            width: 61px;
+            height: 61px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 18px;
+
+            color: #070707;
+
+            font-family: "Orbitron", sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff1a8,
+                    #d4af37 48%,
+                    #8f6f18
+                );
+
+            box-shadow:
+                0 0 35px rgba(212,175,55,.18),
+                inset 0 1px 1px rgba(255,255,255,.65);
+
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%,100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+
+        .brand {
+            margin-top: 17px;
+
+            font-family: "Orbitron", sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+
+            letter-spacing: 2px;
+        }
+
+        .brand span {
+            color: var(--gold);
+        }
+
+        .subtitle {
+            margin-top: 8px;
+
+            color: #777;
+
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* FORM */
+
+        form {
+            margin-top: 28px;
+
+            position: relative;
+            z-index: 2;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #b4b4b4;
+
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+
+            left: 15px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: #696969;
+
+            font-size: 15px;
+
+            pointer-events: none;
+
+            transition: .25s ease;
+        }
+
+        input {
+            width: 100%;
+            height: 51px;
+
+            padding: 0 44px;
+
+            border: 1px solid rgba(255,255,255,.08);
+            outline: none;
+
+            border-radius: 14px;
+
+            color: #ededed;
+
+            background: rgba(255,255,255,.035);
+
+            font-family: "Inter", sans-serif;
+            font-size: 14px;
+
+            transition: .25s ease;
+        }
+
+        input::placeholder {
+            color: #555;
+        }
+
+        input:hover {
+            border-color: rgba(255,255,255,.13);
+        }
+
+        input:focus {
+            border-color: rgba(212,175,55,.55);
+
+            background: rgba(212,175,55,.035);
+
+            box-shadow:
+                0 0 0 3px rgba(212,175,55,.065),
+                0 10px 30px rgba(0,0,0,.25);
+        }
+
+        input:focus + .input-icon {
+            color: var(--gold);
+        }
+
+        /* PASSWORD */
+
+        .password-toggle {
+            position: absolute;
+
+            right: 10px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 32px;
+            height: 32px;
+
+            border: 0;
+            border-radius: 9px;
+
+            color: #666;
+
+            background: transparent;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--gold);
+
+            background: rgba(212,175,55,.07);
+        }
+
+        /* FLASH */
+
+        .flash {
+            margin-top: 20px;
+            margin-bottom: -10px;
+
+            padding: 12px 14px;
+
+            border-radius: 13px;
+
+            color: #ffaaaa;
+
+            border: 1px solid rgba(255,80,80,.18);
+
+            background: rgba(255,60,60,.055);
+
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .flash.success {
+            color: #d9f5c5;
+
+            border-color: rgba(130,220,90,.18);
+
+            background: rgba(100,200,70,.055);
+        }
+
+        /* BUTTON */
+
+        .submit {
+            width: 100%;
+            height: 54px;
+
+            margin-top: 6px;
+
+            border: 0;
+            border-radius: 14px;
+
+            color: #060606;
+
+            font-family: "Inter", sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff0a0,
+                    #d4af37 48%,
+                    #967219
+                );
+
+            box-shadow:
+                0 14px 35px rgba(212,175,55,.14),
+                inset 0 1px rgba(255,255,255,.7);
+
+            transition: .25s ease;
+        }
+
+        .submit:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 20px 48px rgba(212,175,55,.23),
+                inset 0 1px rgba(255,255,255,.7);
+
+            filter: brightness(1.04);
+        }
+
+        .submit:active {
+            transform: scale(.99);
+        }
+
+        .submit.loading {
+            opacity: .7;
+            pointer-events: none;
+        }
+
+        /* DIVIDER */
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin: 24px 0;
+
+            color: #4f4f4f;
+
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+
+            flex: 1;
+
+            height: 1px;
+
+            background: rgba(255,255,255,.07);
+        }
+
+        /* LOGIN */
+
+        .login-box {
+            padding: 16px;
+
+            text-align: center;
+
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.025);
+        }
+
+        .login-box p {
+            color: #6e6e6e;
+
+            font-size: 12px;
+        }
+
+        .login-link {
+            display: inline-block;
+
+            margin-top: 6px;
+
+            color: var(--gold-light);
+
+            font-size: 12px;
+            font-weight: 700;
+
+            text-decoration: none;
+
+            transition: .2s ease;
+        }
+
+        .login-link:hover {
+            color: white;
+        }
+
+        /* SECURITY */
+
+        .security {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            margin-top: 19px;
+
+            color: #515151;
+
+            font-size: 10px;
+        }
+
+        .security-dot {
+            width: 5px;
+            height: 5px;
+
+            border-radius: 50%;
+
+            background: var(--gold);
+
+            box-shadow:
+                0 0 8px rgba(212,175,55,.7);
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 520px) {
+
+            body {
+                padding: 15px;
+                padding-top: 30px;
+            }
+
+            .card-inner {
+                padding: 30px 20px;
+            }
+
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 360px) {
+
+            body {
+                padding: 10px;
+                padding-top: 20px;
+            }
+
+            .card-inner {
+                padding: 25px 16px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #030303;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #403618;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="background">
+    <div class="grid"></div>
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <div class="orb orb-three"></div>
+</div>
+
+
+<div class="page">
+
+    <a href="{{ url_for('index') }}" class="back">
+        ← მთავარი
+    </a>
+
+
+    <div class="card">
+
+        <div class="card-inner">
+
+            <div class="logo">
+
+                <div class="logo-icon">
+                    DS
+                </div>
+
+                <div class="brand">
+                    DARK<span>SEARCH</span>
+                </div>
+
+                <div class="subtitle">
+                    შექმენი შენი ანგარიში
+                </div>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="flash {% if category == 'success' %}success{% endif %}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- REGISTER FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for('register') }}"
+                autocomplete="on"
+            >
+
+                <!-- USERNAME -->
+
+                <div class="field">
+
+                    <label
+                        class="field-label"
+                        for="username"
+                    >
+                        მომხმარებლის სახელი
+                    </label>
+
+                    <div class="input-wrap">
+
+                        <input
+                            id="username"
+                            name="username"
+                            type="text"
+                            placeholder="მაგ. irakli123"
+                            autocomplete="username"
+                            maxlength="50"
+                            required
+                        >
+
+                        <span class="input-icon">
+                            ◉
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="field">
+
+                    <label
+                        class="field-label"
+                        for="password"
+                    >
+                        პაროლი
+                    </label>
+
+                    <div class="input-wrap">
+
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="შეიყვანე ძლიერი პაროლი"
+                            autocomplete="new-password"
+                            maxlength="200"
+                            minlength="8"
+                            required
+                        >
+
+                        <span class="input-icon">
+                            ◆
+                        </span>
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="password"
+                            aria-label="პაროლის ჩვენება"
+                        >
+                            ◉
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONFIRM PASSWORD -->
+
+                <div class="field">
+
+                    <label
+                        class="field-label"
+                        for="confirm_password"
+                    >
+                        გაიმეორე პაროლი
+                    </label>
+
+                    <div class="input-wrap">
+
+                        <input
+                            id="confirm_password"
+                            name="confirm_password"
+                            type="password"
+                            placeholder="გაიმეორე პაროლი"
+                            autocomplete="new-password"
+                            maxlength="200"
+                            minlength="8"
+                            required
+                        >
+
+                        <span class="input-icon">
+                            ◆
+                        </span>
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="confirm_password"
+                            aria-label="პაროლის ჩვენება"
+                        >
+                            ◉
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="submit"
+                    id="registerButton"
+                >
+                    <span id="buttonText">
+                        ანგარიშის შექმნა
+                    </span>
+                </button>
+
+            </form>
+
+
+            <div class="divider">
+                DARKSEARCH
+            </div>
+
+
+            <div class="login-box">
+
+                <p>
+                    უკვე გაქვს ანგარიში?
+                </p>
+
+                <a
+                    href="{{ url_for('login') }}"
+                    class="login-link"
+                >
+                    შესვლა ანგარიშში →
+                </a>
+
+            </div>
+
+
+            <div class="security">
+
+                <span class="security-dot"></span>
+
+                დაცული რეგისტრაციის სისტემა
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* PASSWORD VISIBILITY */
+
+    document
+        .querySelectorAll(".password-toggle")
+        .forEach(function(button) {
+
+            button.addEventListener("click", function() {
+
+                const targetId =
+                    this.dataset.target;
+
+                const input =
+                    document.getElementById(targetId);
+
+                const isPassword =
+                    input.type === "password";
+
+                input.type =
+                    isPassword
+                        ? "text"
+                        : "password";
+
+                this.textContent =
+                    isPassword
+                        ? "◉"
+                        : "◌";
+
+            });
+
+        });
+
+
+    /* FORM VALIDATION */
+
+    const registerForm =
+        document.querySelector("form");
+
+    const password =
+        document.getElementById("password");
+
+    const confirmPassword =
+        document.getElementById("confirm_password");
+
+    const registerButton =
+        document.getElementById("registerButton");
+
+    const buttonText =
+        document.getElementById("buttonText");
+
+
+    registerForm.addEventListener(
+        "submit",
+        function(event) {
+
+            if (
+                password.value !==
+                confirmPassword.value
+            ) {
+
+                event.preventDefault();
+
+                alert("პაროლები ერთმანეთს არ ემთხვევა.");
+
+                confirmPassword.focus();
+
+                return;
+            }
+
+
+            if (password.value.length < 8) {
+
+                event.preventDefault();
+
+                alert(
+                    "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს."
+                );
+
+                password.focus();
+
+                return;
+            }
+
+
+            registerButton.classList.add("loading");
+
+            buttonText.textContent =
+                "იქმნება ანგარიში...";
+
+        }
+    );
+
+
+    /* 3D CARD EFFECT */
+
+    const card =
+        document.querySelector(".card");
+
+    if (window.innerWidth > 700) {
+
+        document.addEventListener(
+            "mousemove",
+            function(event) {
+
+                const x =
+                    (window.innerWidth / 2 - event.clientX) / 180;
+
+                const y =
+                    (window.innerHeight / 2 - event.clientY) / 180;
+
+                card.style.transform =
+                    `rotateY(${-x}deg) rotateX(${y}deg)`;
+
+            }
+        );
+
+        document.addEventListener(
+            "mouseleave",
+            function() {
+
+                card.style.transform =
+                    "rotateY(0deg) rotateX(0deg)";
+
+            }
+        );
+
+    }
+
+</script>
+
+</body>
+</html>
