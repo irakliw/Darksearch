@@ -1,1198 +1,1075 @@
 <!DOCTYPE html>
+
 <html lang="ka">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-    <title>DarkSearch | ძიება</title>
+```
+<title>DarkSearch | ძიება</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
-          rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+      rel="stylesheet">
 
-    <style>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    :root {
+        --gold: #d4af37;
+        --gold-light: #f5d76e;
+        --gold-dark: #8f6f18;
+        --bg: #030303;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: #f5f5f5;
+
+        background:
+            radial-gradient(
+                circle at 10% 10%,
+                rgba(212,175,55,.09),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 90% 80%,
+                rgba(212,175,55,.06),
+                transparent 30%
+            ),
+            #030303;
+
+        overflow-x: hidden;
+    }
+
+    .background {
+        position: fixed;
+        inset: 0;
+        z-index: -10;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .grid {
+        position: absolute;
+        inset: 0;
+        opacity: .10;
+
+        background-image:
+            linear-gradient(
+                rgba(212,175,55,.08) 1px,
+                transparent 1px
+            ),
+            linear-gradient(
+                90deg,
+                rgba(212,175,55,.08) 1px,
+                transparent 1px
+            );
+
+        background-size: 65px 65px;
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: .14;
+        animation: floating 12s ease-in-out infinite;
+    }
+
+    .orb.one {
+        width: 350px;
+        height: 350px;
+        left: -150px;
+        top: -130px;
+        background: #d4af37;
+    }
+
+    .orb.two {
+        width: 320px;
+        height: 320px;
+        right: -140px;
+        bottom: -120px;
+        background: #8f6f18;
+        animation-delay: -5s;
+    }
+
+    @keyframes floating {
+        0%, 100% {
+            transform: translate3d(0,0,0);
         }
 
-        :root {
-            --gold: #d4af37;
-            --gold-light: #f5d76e;
-            --gold-dark: #8f6f18;
-            --bg: #030303;
-            --muted: #777;
+        50% {
+            transform: translate3d(35px,-25px,0);
         }
+    }
 
-        html {
-            scroll-behavior: smooth;
-        }
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
 
-        body {
-            min-height: 100vh;
+        border-bottom:
+            1px solid
+            rgba(255,255,255,.06);
 
-            font-family: "Inter", sans-serif;
-            color: #f5f5f5;
+        background:
+            rgba(3,3,3,.80);
 
-            background:
-                radial-gradient(
-                    circle at 10% 10%,
-                    rgba(212,175,55,.09),
-                    transparent 28%
-                ),
-                radial-gradient(
-                    circle at 90% 80%,
-                    rgba(212,175,55,.06),
-                    transparent 30%
-                ),
-                #030303;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+    }
 
-            overflow-x: hidden;
-        }
+    .nav-inner {
+        width: 100%;
+        max-width: 1180px;
+        min-height: 76px;
+        margin: auto;
+        padding: 0 22px;
 
-        /* =========================
-           BACKGROUND
-        ========================= */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-        .background {
-            position: fixed;
-            inset: 0;
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
 
-            z-index: -10;
+        color: white;
+        text-decoration: none;
+    }
 
-            pointer-events: none;
-            overflow: hidden;
-        }
+    .brand-icon {
+        width: 39px;
+        height: 39px;
 
-        .grid {
-            position: absolute;
-            inset: 0;
+        display: grid;
+        place-items: center;
 
-            opacity: .10;
+        border-radius: 11px;
 
-            background-image:
-                linear-gradient(
-                    rgba(212,175,55,.08) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(212,175,55,.08) 1px,
-                    transparent 1px
-                );
+        color: #080808;
 
-            background-size: 65px 65px;
-        }
+        font-family: "Orbitron", sans-serif;
+        font-size: 11px;
+        font-weight: 900;
 
-        .orb {
-            position: absolute;
+        background:
+            linear-gradient(
+                135deg,
+                #fff1a8,
+                #d4af37,
+                #8f6f18
+            );
 
-            border-radius: 50%;
+        box-shadow:
+            0 0 25px
+            rgba(212,175,55,.13);
+    }
 
-            filter: blur(100px);
+    .brand-name {
+        font-family: "Orbitron", sans-serif;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+    }
 
-            opacity: .14;
+    .brand-name span {
+        color: var(--gold);
+    }
 
-            animation:
-                floating 12s ease-in-out infinite;
-        }
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
 
-        .orb.one {
-            width: 350px;
-            height: 350px;
+    .nav-link {
+        padding: 9px 12px;
 
-            left: -150px;
-            top: -130px;
+        border:
+            1px solid
+            rgba(255,255,255,.06);
 
-            background: #d4af37;
-        }
+        border-radius: 10px;
 
-        .orb.two {
-            width: 320px;
-            height: 320px;
+        color: #858585;
 
-            right: -140px;
-            bottom: -120px;
+        text-decoration: none;
 
-            background: #8f6f18;
+        font-size: 11px;
+        font-weight: 600;
 
-            animation-delay: -5s;
-        }
+        background:
+            rgba(255,255,255,.02);
 
-        @keyframes floating {
+        transition: .2s ease;
+    }
 
-            0%, 100% {
-                transform: translate3d(0,0,0);
-            }
+    .nav-link:hover {
+        color: var(--gold-light);
 
-            50% {
-                transform: translate3d(35px,-25px,0);
-            }
+        border-color:
+            rgba(212,175,55,.18);
+    }
 
-        }
+    .container {
+        width: 100%;
+        max-width: 1080px;
+        margin: auto;
+        padding: 45px 22px 70px;
+    }
 
-        /* =========================
-           NAVBAR
-        ========================= */
+    .page-heading {
+        margin-bottom: 25px;
+    }
 
-        .navbar {
-            position: sticky;
-            top: 0;
+    .heading-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
 
-            z-index: 100;
+        color: var(--gold-light);
 
-            border-bottom:
-                1px solid
-                rgba(255,255,255,.06);
+        font-size: 10px;
+        font-weight: 800;
 
-            background:
-                rgba(3,3,3,.80);
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+    }
 
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-        }
+    .heading-label::before {
+        content: "";
+
+        width: 6px;
+        height: 6px;
+
+        border-radius: 50%;
+
+        background: var(--gold);
+
+        box-shadow:
+            0 0 9px
+            rgba(212,175,55,.8);
+    }
+
+    h1 {
+        margin-top: 11px;
+
+        font-family: "Orbitron", sans-serif;
+
+        font-size: clamp(25px, 4vw, 36px);
+    }
+
+    h1 span {
+        color: var(--gold);
+    }
+
+    .heading-text {
+        max-width: 650px;
+
+        margin-top: 9px;
+
+        color: #707070;
+
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .search-panel {
+        position: relative;
+
+        padding: 28px;
+
+        border:
+            1px solid
+            rgba(212,175,55,.12);
+
+        border-radius: 24px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(18,18,18,.94),
+                rgba(7,7,7,.94)
+            );
+
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+
+        box-shadow:
+            0 30px 80px
+            rgba(0,0,0,.35);
+
+        overflow: hidden;
+
+        transition: transform .15s ease;
+    }
+
+    .search-panel::before {
+        content: "";
+
+        position: absolute;
+
+        width: 300px;
+        height: 300px;
+
+        right: -150px;
+        top: -170px;
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(212,175,55,.09),
+                transparent 70%
+            );
+
+        pointer-events: none;
+    }
+
+    .panel-title {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+        gap: 13px;
+
+        margin-bottom: 23px;
+    }
+
+    .search-icon {
+        width: 47px;
+        height: 47px;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 14px;
+
+        color: #070707;
+
+        font-size: 20px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #fff0a0,
+                #d4af37
+            );
+
+        box-shadow:
+            0 10px 30px
+            rgba(212,175,55,.12);
+    }
+
+    .panel-title h2 {
+        font-size: 17px;
+    }
+
+    .panel-title p {
+        margin-top: 4px;
+        color: #5f5f5f;
+        font-size: 10px;
+    }
+
+    .fields {
+        position: relative;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 15px;
+    }
+
+    .field.full {
+        grid-column: 1 / -1;
+    }
+
+    .field label {
+        display: block;
+
+        margin-bottom: 7px;
+
+        color: #a0a0a0;
+
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .input-wrap {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+
+        left: 14px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        color: #606060;
+
+        pointer-events: none;
+    }
+
+    input,
+    select {
+        width: 100%;
+        height: 49px;
+
+        padding:
+            0 15px 0 42px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.075);
+
+        border-radius: 13px;
+
+        outline: none;
+
+        color: #ededed;
+
+        background:
+            rgba(255,255,255,.028);
+
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+
+        transition: .25s ease;
+    }
+
+    input::placeholder {
+        color: #4e4e4e;
+    }
+
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+    }
+
+    select option {
+        color: #111;
+        background: #fff;
+    }
+
+    input:hover,
+    select:hover {
+        border-color:
+            rgba(255,255,255,.13);
+    }
+
+    input:focus,
+    select:focus {
+        border-color:
+            rgba(212,175,55,.50);
+
+        background:
+            rgba(212,175,55,.035);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(212,175,55,.055);
+    }
+
+    .info {
+        position: relative;
+
+        margin-top: 20px;
+
+        padding: 14px 16px;
+
+        display: flex;
+        gap: 12px;
+
+        border:
+            1px solid
+            rgba(212,175,55,.10);
+
+        border-radius: 13px;
+
+        color: #777;
+
+        background:
+            rgba(212,175,55,.025);
+
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    .info-icon {
+        color: var(--gold);
+        font-weight: 800;
+    }
+
+    .buttons {
+        position: relative;
+
+        display: flex;
+        gap: 10px;
+
+        margin-top: 20px;
+    }
+
+    .search-button {
+        flex: 1;
+
+        height: 52px;
+
+        border: 0;
+        border-radius: 13px;
+
+        color: #070707;
+
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        background:
+            linear-gradient(
+                135deg,
+                #fff0a0,
+                #d4af37,
+                #967219
+            );
+
+        box-shadow:
+            0 12px 30px
+            rgba(212,175,55,.13);
+
+        transition: .25s ease;
+    }
+
+    .search-button:hover:not(:disabled) {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 18px 40px
+            rgba(212,175,55,.22);
+    }
+
+    .search-button:disabled {
+        opacity: .65;
+        cursor: wait;
+    }
+
+    .clear-button {
+        width: 115px;
+
+        height: 52px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.08);
+
+        border-radius: 13px;
+
+        color: #777;
+
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        background:
+            rgba(255,255,255,.025);
+
+        transition: .2s ease;
+    }
+
+    .clear-button:hover {
+        color: #ddd;
+
+        border-color:
+            rgba(255,255,255,.15);
+    }
+
+    .result-panel {
+        margin-top: 20px;
+
+        padding: 25px;
+
+        border:
+            1px solid
+            rgba(255,255,255,.06);
+
+        border-radius: 20px;
+
+        background:
+            rgba(10,10,10,.78);
+
+        text-align: center;
+    }
+
+    .result-icon {
+        width: 52px;
+        height: 52px;
+
+        margin: auto;
+
+        display: grid;
+        place-items: center;
+
+        border-radius: 16px;
+
+        color: var(--gold);
+
+        background:
+            rgba(212,175,55,.06);
+
+        border:
+            1px solid
+            rgba(212,175,55,.10);
+
+        font-size: 21px;
+    }
+
+    .result-panel h3 {
+        margin-top: 14px;
+        font-size: 14px;
+    }
+
+    .result-panel p {
+        max-width: 500px;
+
+        margin: 7px auto 0;
+
+        color: #606060;
+
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 700px) {
 
         .nav-inner {
-            width: 100%;
-            max-width: 1180px;
-
-            min-height: 76px;
-
-            margin: auto;
-            padding: 0 22px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-
-            color: white;
-            text-decoration: none;
-        }
-
-        .brand-icon {
-            width: 39px;
-            height: 39px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 11px;
-
-            color: #080808;
-
-            font-family: "Orbitron", sans-serif;
-            font-size: 11px;
-            font-weight: 900;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff1a8,
-                    #d4af37,
-                    #8f6f18
-                );
-
-            box-shadow:
-                0 0 25px
-                rgba(212,175,55,.13);
+            min-height: 68px;
+            padding: 0 15px;
         }
 
         .brand-name {
-            font-family: "Orbitron", sans-serif;
-
-            font-size: 15px;
-            font-weight: 800;
-
-            letter-spacing: 1.4px;
-        }
-
-        .brand-name span {
-            color: var(--gold);
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 9px;
+            font-size: 13px;
         }
 
         .nav-link {
-            padding: 9px 12px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.06);
-
-            border-radius: 10px;
-
-            color: #858585;
-
-            text-decoration: none;
-
-            font-size: 11px;
-            font-weight: 600;
-
-            background:
-                rgba(255,255,255,.02);
-
-            transition: .2s ease;
+            display: none;
         }
-
-        .nav-link:hover {
-            color: var(--gold-light);
-
-            border-color:
-                rgba(212,175,55,.18);
-        }
-
-        /* =========================
-           MAIN
-        ========================= */
 
         .container {
-            width: 100%;
-            max-width: 1080px;
-
-            margin: auto;
-
-            padding:
-                45px 22px 70px;
+            padding: 30px 15px 50px;
         }
-
-        .page-heading {
-            margin-bottom: 25px;
-        }
-
-        .heading-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-
-            color: var(--gold-light);
-
-            font-size: 10px;
-            font-weight: 800;
-
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-        }
-
-        .heading-label::before {
-            content: "";
-
-            width: 6px;
-            height: 6px;
-
-            border-radius: 50%;
-
-            background: var(--gold);
-
-            box-shadow:
-                0 0 9px
-                rgba(212,175,55,.8);
-        }
-
-        h1 {
-            margin-top: 11px;
-
-            font-family: "Orbitron", sans-serif;
-
-            font-size: clamp(25px, 4vw, 36px);
-        }
-
-        h1 span {
-            color: var(--gold);
-        }
-
-        .heading-text {
-            max-width: 650px;
-
-            margin-top: 9px;
-
-            color: #707070;
-
-            font-size: 12px;
-            line-height: 1.7;
-        }
-
-        /* =========================
-           SEARCH PANEL
-        ========================= */
 
         .search-panel {
-            position: relative;
-
-            padding: 28px;
-
-            border:
-                1px solid
-                rgba(212,175,55,.12);
-
-            border-radius: 24px;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(18,18,18,.94),
-                    rgba(7,7,7,.94)
-                );
-
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-
-            box-shadow:
-                0 30px 80px
-                rgba(0,0,0,.35);
-
-            overflow: hidden;
+            padding: 20px;
         }
-
-        .search-panel::before {
-            content: "";
-
-            position: absolute;
-
-            width: 300px;
-            height: 300px;
-
-            right: -150px;
-            top: -170px;
-
-            border-radius: 50%;
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(212,175,55,.09),
-                    transparent 70%
-                );
-
-            pointer-events: none;
-        }
-
-        .panel-title {
-            position: relative;
-
-            display: flex;
-            align-items: center;
-            gap: 13px;
-
-            margin-bottom: 23px;
-        }
-
-        .search-icon {
-            width: 47px;
-            height: 47px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 14px;
-
-            color: #070707;
-
-            font-size: 20px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff0a0,
-                    #d4af37
-                );
-
-            box-shadow:
-                0 10px 30px
-                rgba(212,175,55,.12);
-        }
-
-        .panel-title h2 {
-            font-size: 17px;
-        }
-
-        .panel-title p {
-            margin-top: 4px;
-
-            color: #5f5f5f;
-
-            font-size: 10px;
-        }
-
-        /* =========================
-           FIELDS
-        ========================= */
 
         .fields {
-            position: relative;
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
-            gap: 15px;
+            grid-template-columns: 1fr;
         }
 
         .field.full {
-            grid-column: 1 / -1;
+            grid-column: auto;
         }
-
-        .field label {
-            display: block;
-
-            margin-bottom: 7px;
-
-            color: #a0a0a0;
-
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .input-wrap {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-
-            left: 14px;
-            top: 50%;
-
-            transform: translateY(-50%);
-
-            color: #606060;
-
-            pointer-events: none;
-        }
-
-        input,
-        select {
-            width: 100%;
-            height: 49px;
-
-            padding:
-                0 15px 0 42px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.075);
-
-            border-radius: 13px;
-
-            outline: none;
-
-            color: #ededed;
-
-            background:
-                rgba(255,255,255,.028);
-
-            font-family: "Inter", sans-serif;
-            font-size: 12px;
-
-            transition: .25s ease;
-        }
-
-        input::placeholder {
-            color: #4e4e4e;
-        }
-
-        select {
-            appearance: none;
-            -webkit-appearance: none;
-
-            cursor: pointer;
-        }
-
-        select option {
-            color: #111;
-            background: #fff;
-        }
-
-        input:hover,
-        select:hover {
-            border-color:
-                rgba(255,255,255,.13);
-        }
-
-        input:focus,
-        select:focus {
-            border-color:
-                rgba(212,175,55,.50);
-
-            background:
-                rgba(212,175,55,.035);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(212,175,55,.055);
-        }
-
-        /* =========================
-           INFO
-        ========================= */
-
-        .info {
-            position: relative;
-
-            margin-top: 20px;
-
-            padding: 14px 16px;
-
-            display: flex;
-            gap: 12px;
-
-            border:
-                1px solid
-                rgba(212,175,55,.10);
-
-            border-radius: 13px;
-
-            color: #777;
-
-            background:
-                rgba(212,175,55,.025);
-
-            font-size: 10px;
-            line-height: 1.6;
-        }
-
-        .info-icon {
-            color: var(--gold);
-
-            font-weight: 800;
-        }
-
-        /* =========================
-           BUTTONS
-        ========================= */
 
         .buttons {
-            position: relative;
-
-            display: flex;
-            gap: 10px;
-
-            margin-top: 20px;
-        }
-
-        .search-button {
-            flex: 1;
-
-            height: 52px;
-
-            border: 0;
-            border-radius: 13px;
-
-            color: #070707;
-
-            font-family: "Inter", sans-serif;
-            font-size: 12px;
-            font-weight: 800;
-
-            cursor: pointer;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #fff0a0,
-                    #d4af37,
-                    #967219
-                );
-
-            box-shadow:
-                0 12px 30px
-                rgba(212,175,55,.13);
-
-            transition: .25s ease;
-        }
-
-        .search-button:hover {
-            transform: translateY(-3px);
-
-            box-shadow:
-                0 18px 40px
-                rgba(212,175,55,.22);
+            flex-direction: column;
         }
 
         .clear-button {
-            width: 115px;
+            width: 100%;
+        }
+    }
 
-            height: 52px;
+    @media (max-width: 380px) {
 
-            border:
-                1px solid
-                rgba(255,255,255,.08);
-
-            border-radius: 13px;
-
-            color: #777;
-
-            font-family: "Inter", sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-
-            cursor: pointer;
-
-            background:
-                rgba(255,255,255,.025);
-
-            transition: .2s ease;
+        .search-panel {
+            padding: 17px;
         }
 
-        .clear-button:hover {
-            color: #ddd;
-
-            border-color:
-                rgba(255,255,255,.15);
+        .panel-title h2 {
+            font-size: 15px;
         }
+    }
+</style>
+```
 
-        /* =========================
-           RESULT PLACEHOLDER
-        ========================= */
-
-        .result-panel {
-            margin-top: 20px;
-
-            padding: 25px;
-
-            border:
-                1px solid
-                rgba(255,255,255,.06);
-
-            border-radius: 20px;
-
-            background:
-                rgba(10,10,10,.78);
-
-            text-align: center;
-        }
-
-        .result-icon {
-            width: 52px;
-            height: 52px;
-
-            margin: auto;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 16px;
-
-            color: var(--gold);
-
-            background:
-                rgba(212,175,55,.06);
-
-            border:
-                1px solid
-                rgba(212,175,55,.10);
-
-            font-size: 21px;
-        }
-
-        .result-panel h3 {
-            margin-top: 14px;
-
-            font-size: 14px;
-        }
-
-        .result-panel p {
-            max-width: 500px;
-
-            margin: 7px auto 0;
-
-            color: #606060;
-
-            font-size: 11px;
-            line-height: 1.7;
-        }
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 700px) {
-
-            .nav-inner {
-                min-height: 68px;
-
-                padding:
-                    0 15px;
-            }
-
-            .brand-name {
-                font-size: 13px;
-            }
-
-            .nav-link {
-                display: none;
-            }
-
-            .container {
-                padding:
-                    30px 15px 50px;
-            }
-
-            .search-panel {
-                padding: 20px;
-            }
-
-            .fields {
-                grid-template-columns: 1fr;
-            }
-
-            .field.full {
-                grid-column: auto;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            .clear-button {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 380px) {
-
-            .search-panel {
-                padding: 17px;
-            }
-
-            .panel-title h2 {
-                font-size: 15px;
-            }
-        }
-
-    </style>
 </head>
-
 
 <body>
 
-
 <div class="background">
-
     <div class="grid"></div>
-
     <div class="orb one"></div>
-
     <div class="orb two"></div>
-
 </div>
-
-
-<!-- =========================
-     NAVBAR
-========================= -->
 
 <nav class="navbar">
 
-    <div class="nav-inner">
+```
+<div class="nav-inner">
+
+    <a
+        href="{{ url_for('dashboard') }}"
+        class="brand"
+    >
+        <div class="brand-icon">
+            DS
+        </div>
+
+        <div class="brand-name">
+            DARK<span>SEARCH</span>
+        </div>
+    </a>
+
+    <div class="nav-actions">
 
         <a
             href="{{ url_for('dashboard') }}"
-            class="brand"
+            class="nav-link"
         >
-
-            <div class="brand-icon">
-                DS
-            </div>
-
-            <div class="brand-name">
-                DARK<span>SEARCH</span>
-            </div>
-
+            Dashboard
         </a>
 
+        <a
+            href="{{ url_for('purchase_page') }}"
+            class="nav-link"
+        >
+            ძიებების შეძენა
+        </a>
 
-        <div class="nav-actions">
+        <a
+            href="{{ url_for('logout') }}"
+            class="nav-link"
+        >
+            გასვლა
+        </a>
 
-            <a
-                href="{{ url_for('dashboard') }}"
-                class="nav-link"
-            >
-                Dashboard
-            </a>
+    </div>
 
-            <a
-                href="{{ url_for('purchase_page') }}"
-                class="nav-link"
-            >
-                ძიებების შეძენა
-            </a>
+</div>
+```
 
-            <a
-                href="{{ url_for('logout') }}"
-                class="nav-link"
-            >
-                გასვლა
-            </a>
+</nav>
 
+<main class="container">
+
+```
+<section class="page-heading">
+
+    <div class="heading-label">
+        Search System
+    </div>
+
+    <h1>
+        მონაცემთა <span>ძიება</span>
+    </h1>
+
+    <p class="heading-text">
+        გამოიყენე მხოლოდ იმ მონაცემების მოძიებისთვის,
+        რომლებზე წვდომის შესაბამისი უფლებაც გაქვს.
+    </p>
+
+</section>
+
+<section class="search-panel">
+
+    <div class="panel-title">
+
+        <div class="search-icon">
+            ⌕
+        </div>
+
+        <div>
+            <h2>
+                ძიების პარამეტრები
+            </h2>
+
+            <p>
+                შეავსე შესაბამისი ველები
+            </p>
         </div>
 
     </div>
 
-</nav>
+    <!-- FIXED: endpoint is "search" -->
+    <form
+        id="searchForm"
+        method="POST"
+        action="{{ url_for('api_search') }}"
+    >
 
+        <div class="fields">
 
-<!-- =========================
-     MAIN
-========================= -->
+            <div class="field">
 
-<main class="container">
+                <label for="first_name">
+                    სახელი
+                </label>
 
+                <div class="input-wrap">
 
-    <section class="page-heading">
+                    <input
+                        type="text"
+                        id="first_name"
+                        name="first_name"
+                        placeholder="მაგ. გიორგი"
+                        autocomplete="off"
+                        maxlength="100"
+                    >
 
-        <div class="heading-label">
-            Search System
+                    <span class="input-icon">
+                        ◉
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="last_name">
+                    გვარი
+                </label>
+
+                <div class="input-wrap">
+
+                    <input
+                        type="text"
+                        id="last_name"
+                        name="last_name"
+                        placeholder="მაგ. ბერიძე"
+                        autocomplete="off"
+                        maxlength="100"
+                    >
+
+                    <span class="input-icon">
+                        ◉
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="father_name">
+                    მამის სახელი
+                </label>
+
+                <div class="input-wrap">
+
+                    <input
+                        type="text"
+                        id="father_name"
+                        name="father_name"
+                        placeholder="მამის სახელი"
+                        autocomplete="off"
+                        maxlength="100"
+                    >
+
+                    <span class="input-icon">
+                        ◇
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="gender">
+                    სქესი
+                </label>
+
+                <div class="input-wrap">
+
+                    <select
+                        id="gender"
+                        name="gender"
+                    >
+                        <option value="">
+                            ყველა
+                        </option>
+
+                        <option value="male">
+                            კაცი
+                        </option>
+
+                        <option value="female">
+                            ქალი
+                        </option>
+                    </select>
+
+                    <span class="input-icon">
+                        ◈
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="personal_id">
+                    პირადი ნომერი
+                </label>
+
+                <div class="input-wrap">
+
+                    <input
+                        type="text"
+                        id="personal_id"
+                        name="personal_id"
+                        placeholder="პირადი ნომერი"
+                        autocomplete="off"
+                        inputmode="numeric"
+                        maxlength="100"
+                    >
+
+                    <span class="input-icon">
+                        #
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="birth_year">
+                    დაბადების წელი
+                </label>
+
+                <div class="input-wrap">
+
+                    <input
+                        type="text"
+                        id="birth_year"
+                        name="birth_year"
+                        placeholder="მაგ. 1995"
+                        autocomplete="off"
+                        inputmode="numeric"
+                        maxlength="4"
+                    >
+
+                    <span class="input-icon">
+                        ◷
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="field full">
+
+                <label for="address">
+                    მისამართი
+                </label>
+
+                <div class="input-wrap">
+
+                    <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        placeholder="მისამართი"
+                        autocomplete="off"
+                        maxlength="200"
+                    >
+
+                    <span class="input-icon">
+                        ⌖
+                    </span>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <h1>
-            მონაცემთა <span>ძიება</span>
-        </h1>
+        <div class="info">
 
-        <p class="heading-text">
-            გამოიყენე მხოლოდ იმ მონაცემების მოძიებისთვის,
-            რომლებზე წვდომის შესაბამისი უფლებაც გაქვს.
-        </p>
-
-    </section>
-
-
-    <!-- =========================
-         SEARCH PANEL
-    ========================= -->
-
-    <section class="search-panel">
-
-
-        <div class="panel-title">
-
-            <div class="search-icon">
-                ⌕
+            <div class="info-icon">
+                !
             </div>
 
             <div>
-
-                <h2>
-                    ძიების პარამეტრები
-                </h2>
-
-                <p>
-                    შეავსე შესაბამისი ველები
-                </p>
-
+                ძიების დაწყებამდე შეამოწმე, რომ გაქვს
+                შესაბამისი ავტორიზაცია და ამ მონაცემებზე
+                წვდომის კანონიერი საფუძველი.
             </div>
 
         </div>
 
+        <div class="buttons">
+
+            <button
+                type="submit"
+                class="search-button"
+                id="searchButton"
+            >
+                ძიების დაწყება →
+            </button>
+
+            <button
+                type="button"
+                class="clear-button"
+                id="clearButton"
+            >
+                გასუფთავება
+            </button>
 
-        <!-- FORM -->
-
-        <form
-            id="searchForm"
-            method="POST"
-            action="{{ url_for('search_page') }}"
-        >
-
-            <div class="fields">
-
-
-                <!-- FIRST NAME -->
-
-                <div class="field">
-
-                    <label for="first_name">
-                        სახელი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="first_name"
-                            name="first_name"
-                            placeholder="მაგ. giorgi"
-                            autocomplete="off"
-                            maxlength="100"
-                        >
-
-                        <span class="input-icon">
-                            ◉
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- LAST NAME -->
-
-                <div class="field">
-
-                    <label for="last_name">
-                        გვარი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="last_name"
-                            name="last_name"
-                            placeholder="მაგ. beridze"
-                            autocomplete="off"
-                            maxlength="100"
-                        >
-
-                        <span class="input-icon">
-                            ◉
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- FATHER NAME -->
-
-                <div class="field">
-
-                    <label for="father_name">
-                        მამის სახელი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="father_name"
-                            name="father_name"
-                            placeholder="მამის სახელი"
-                            autocomplete="off"
-                            maxlength="100"
-                        >
-
-                        <span class="input-icon">
-                            ◇
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- GENDER -->
-
-                <div class="field">
-
-                    <label for="gender">
-                        სქესი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <select
-                            id="gender"
-                            name="gender"
-                        >
-
-                            <option value="">
-                                ყველა
-                            </option>
-
-                            <option value="male">
-                                კაცი
-                            </option>
-
-                            <option value="female">
-                                ქალი
-                            </option>
-
-                        </select>
-
-                        <span class="input-icon">
-                            ◈
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PERSONAL ID -->
-
-                <div class="field">
-
-                    <label for="personal_id">
-                        პირადი ნომერი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="personal_id"
-                            name="personal_id"
-                            placeholder="პირადი ნომერი"
-                            autocomplete="off"
-                            inputmode="numeric"
-                            maxlength="100"
-                        >
-
-                        <span class="input-icon">
-                            #
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- BIRTH YEAR -->
-
-                <div class="field">
-
-                    <label for="birth_year">
-                        დაბადების წელი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="birth_year"
-                            name="birth_year"
-                            placeholder="მაგ. 1995"
-                            autocomplete="off"
-                            inputmode="numeric"
-                            maxlength="4"
-                        >
-
-                        <span class="input-icon">
-                            ◷
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ADDRESS -->
-
-                <div class="field full">
-
-                    <label for="address">
-                        მისამართი
-                    </label>
-
-                    <div class="input-wrap">
-
-                        <input
-                            type="text"
-                            id="address"
-                            name="address"
-                            placeholder="მისამართი"
-                            autocomplete="off"
-                            maxlength="200"
-                        >
-
-                        <span class="input-icon">
-                            ⌖
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- INFO -->
-
-            <div class="info">
-
-                <div class="info-icon">
-                    !
-                </div>
-
-                <div>
-                    ძიების დაწყებამდე შეამოწმე, რომ გაქვს
-                    შესაბამისი ავტორიზაცია და ამ მონაცემებზე
-                    წვდომის კანონიერი საფუძველი.
-                </div>
-
-            </div>
-
-
-            <!-- BUTTONS -->
-
-            <div class="buttons">
-
-                <button
-                    type="submit"
-                    class="search-button"
-                    id="searchButton"
-                >
-                    ძიების დაწყება →
-                </button>
-
-                <button
-                    type="button"
-                    class="clear-button"
-                    id="clearButton"
-                >
-                    გასუფთავება
-                </button>
-
-            </div>
-
-        </form>
-
-    </section>
-
-
-    <!-- =========================
-         RESULT AREA
-    ========================= -->
-
-    <section
-        class="result-panel"
-        id="resultPanel"
-    >
-
-        <div class="result-icon">
-            ⌕
         </div>
 
-        <h3>
-            მზად არის ძიებისთვის
-        </h3>
+    </form>
 
-        <p>
-            შეავსე შესაბამისი საძიებო ველი და გააგზავნე
-            მოთხოვნა. შედეგების ჩვენება დამოკიდებულია
-            Flask-ის backend-ის მიერ მინიჭებულ უფლებებზე.
-        </p>
+</section>
 
-    </section>
+<section
+    class="result-panel"
+    id="resultPanel"
+>
 
+    <div class="result-icon">
+        ⌕
+    </div>
+
+    <h3>
+        მზად არის
+    </h3>
+
+    <p id="resultText">
+        შეავსე შესაბამისი ველი და გააგზავნე მოთხოვნა.
+        ძიების შედეგები ხელმისაწვდომი იქნება მხოლოდ
+        backend-ის მიერ ავტორიზებული ფუნქციონალის ფარგლებში.
+    </p>
+
+</section>
+```
 
 </main>
-
 
 <script>
 
@@ -1205,40 +1082,38 @@
     const searchButton =
         document.getElementById("searchButton");
 
+    const resultText =
+        document.getElementById("resultText");
 
-    /* =========================
-       CLEAR
-    ========================= */
 
     clearButton.addEventListener(
         "click",
         function() {
 
-            form
-                .querySelectorAll(
-                    "input"
-                )
-                .forEach(function(input) {
-
+            form.querySelectorAll("input").forEach(
+                function(input) {
                     input.value = "";
+                }
+            );
 
-                });
+            document.getElementById("gender").value = "";
 
-            document
-                .getElementById("gender")
-                .value = "";
+            searchButton.disabled = false;
 
+            searchButton.textContent =
+                "ძიების დაწყება →";
+
+            resultText.textContent =
+                "შეავსე შესაბამისი ველი და გააგზავნე მოთხოვნა.";
         }
     );
 
 
-    /* =========================
-       VALIDATION
-    ========================= */
-
     form.addEventListener(
         "submit",
-        function(event) {
+        async function(event) {
+
+            event.preventDefault();
 
             const fields = [
                 "first_name",
@@ -1265,32 +1140,66 @@
 
             });
 
-
             if (!hasValue) {
-
-                event.preventDefault();
 
                 alert(
                     "გთხოვ, შეავსე მინიმუმ ერთი საძიებო ველი."
                 );
 
                 return;
-
             }
-
 
             searchButton.disabled = true;
 
             searchButton.textContent =
-                "მიმდინარეობს ძიება...";
+                "მიმდინარეობს...";
+
+            try {
+
+                const response =
+                    await fetch(
+                        "{{ url_for('api_search') }}",
+                        {
+                            method: "POST",
+                            body: new FormData(form),
+                            credentials: "same-origin"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (data.success) {
+
+                    resultText.textContent =
+                        "მოთხოვნა წარმატებით შესრულდა.";
+
+                } else {
+
+                    resultText.textContent =
+                        data.error ||
+                        "მოთხოვნის შესრულება ვერ მოხერხდა.";
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                resultText.textContent =
+                    "სერვერთან დაკავშირებისას მოხდა შეცდომა.";
+
+            } finally {
+
+                searchButton.disabled = false;
+
+                searchButton.textContent =
+                    "ძიების დაწყება →";
+            }
 
         }
     );
 
-
-    /* =========================
-       YEAR VALIDATION
-    ========================= */
 
     const birthYear =
         document.getElementById("birth_year");
@@ -1300,18 +1209,13 @@
         function() {
 
             this.value =
-                this.value.replace(
-                    /[^0-9]/g,
-                    ""
-                ).slice(0, 4);
+                this.value
+                    .replace(/[^0-9]/g, "")
+                    .slice(0, 4);
 
         }
     );
 
-
-    /* =========================
-       PERSONAL ID INPUT
-    ========================= */
 
     const personalId =
         document.getElementById("personal_id");
@@ -1329,10 +1233,6 @@
         }
     );
 
-
-    /* =========================
-       3D PANEL EFFECT
-    ========================= */
 
     const panel =
         document.querySelector(".search-panel");
@@ -1370,8 +1270,7 @@
             "mouseleave",
             function() {
 
-                panel.style.transform =
-                    "";
+                panel.style.transform = "";
 
             }
         );
