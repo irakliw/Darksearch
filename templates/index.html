@@ -1,1 +1,1313 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+    <title>DarkSearch | Secure Search Portal</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f5d76e;
+            --gold-dark: #8f6f18;
+
+            --black: #030303;
+            --black-2: #080808;
+            --black-3: #101010;
+
+            --white: #f5f5f5;
+            --muted: #929292;
+
+            --glass: rgba(255,255,255,.045);
+            --glass-border: rgba(212,175,55,.18);
+
+            --shadow:
+                0 25px 80px rgba(0,0,0,.65),
+                inset 0 1px 0 rgba(255,255,255,.04);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--white);
+            background:
+                radial-gradient(circle at 10% 10%, rgba(212,175,55,.08), transparent 28%),
+                radial-gradient(circle at 90% 20%, rgba(255,190,60,.055), transparent 25%),
+                radial-gradient(circle at 50% 100%, rgba(212,175,55,.045), transparent 30%),
+                #030303;
+            font-family: "Inter", sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           BACKGROUND
+        ========================= */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+            opacity: .12;
+            background-image:
+                linear-gradient(rgba(212,175,55,.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,175,55,.08) 1px, transparent 1px);
+            background-size: 70px 70px;
+            mask-image: linear-gradient(to bottom, black, transparent 85%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: .15;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .orb.one {
+            width: 300px;
+            height: 300px;
+            background: #d4af37;
+            left: -120px;
+            top: 100px;
+        }
+
+        .orb.two {
+            width: 350px;
+            height: 350px;
+            background: #8f6f18;
+            right: -150px;
+            top: 350px;
+            animation-delay: -4s;
+        }
+
+        .orb.three {
+            width: 240px;
+            height: 240px;
+            background: #f5d76e;
+            left: 40%;
+            bottom: -130px;
+            animation-delay: -8s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate3d(0,0,0) scale(1);
+            }
+
+            50% {
+                transform: translate3d(30px,-30px,0) scale(1.08);
+            }
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        .navbar {
+            width: min(1180px, calc(100% - 30px));
+            margin: 18px auto 0;
+
+            min-height: 72px;
+            padding: 12px 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+
+            background: rgba(10,10,10,.68);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+
+            box-shadow: var(--shadow);
+
+            position: relative;
+            z-index: 20;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-icon {
+            width: 43px;
+            height: 43px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 14px;
+
+            color: #080808;
+            font-size: 20px;
+            font-weight: 900;
+
+            background:
+                linear-gradient(135deg,
+                    #fff1a8,
+                    #d4af37 45%,
+                    #8f6f18);
+
+            box-shadow:
+                0 0 30px rgba(212,175,55,.18),
+                inset 0 1px 1px rgba(255,255,255,.5);
+        }
+
+        .logo-text {
+            font-family: "Orbitron", sans-serif;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-size: 18px;
+        }
+
+        .logo-text span {
+            color: var(--gold);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            color: #bcbcbc;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 11px 14px;
+            border-radius: 12px;
+            transition: .25s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--gold-light);
+            background: rgba(212,175,55,.07);
+        }
+
+        .nav-button {
+            text-decoration: none;
+            padding: 11px 17px;
+            border-radius: 12px;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            color: #050505;
+
+            background: linear-gradient(
+                135deg,
+                #f8e79b,
+                #d4af37,
+                #a47e18
+            );
+
+            box-shadow:
+                0 8px 25px rgba(212,175,55,.14),
+                inset 0 1px rgba(255,255,255,.55);
+
+            transition: .25s ease;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 12px 35px rgba(212,175,55,.22);
+        }
+
+        .mobile-menu {
+            display: none;
+            width: 43px;
+            height: 43px;
+            border-radius: 12px;
+            border: 1px solid rgba(212,175,55,.2);
+            background: rgba(255,255,255,.04);
+            color: var(--gold);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            width: min(1100px, calc(100% - 30px));
+            min-height: 650px;
+            margin: 0 auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 850px;
+            padding: 80px 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+
+            padding: 9px 15px;
+
+            border: 1px solid rgba(212,175,55,.2);
+            border-radius: 100px;
+
+            background: rgba(212,175,55,.055);
+            backdrop-filter: blur(12px);
+
+            color: #d8d8d8;
+            font-size: 12px;
+            font-weight: 600;
+
+            box-shadow:
+                inset 0 1px rgba(255,255,255,.04),
+                0 10px 40px rgba(0,0,0,.25);
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #d4af37;
+            box-shadow: 0 0 12px #d4af37;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: .5;
+                transform: scale(.85);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .hero h1 {
+            margin-top: 28px;
+
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(42px, 7vw, 82px);
+            line-height: 1.02;
+            font-weight: 800;
+            letter-spacing: -3px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff 10%,
+                    #f5d76e 45%,
+                    #b48b24 80%
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+
+            text-shadow:
+                0 0 45px rgba(212,175,55,.09);
+        }
+
+        .hero h1 span {
+            display: block;
+        }
+
+        .hero-description {
+            max-width: 650px;
+            margin: 27px auto 0;
+
+            color: #a2a2a2;
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            margin-top: 38px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            min-width: 175px;
+
+            padding: 15px 24px;
+
+            border-radius: 14px;
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 800;
+
+            transition: .3s ease;
+        }
+
+        .primary-btn {
+            color: #050505;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff0a0,
+                    #d4af37 50%,
+                    #987218
+                );
+
+            box-shadow:
+                0 15px 45px rgba(212,175,55,.17),
+                inset 0 1px rgba(255,255,255,.65);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-4px) scale(1.015);
+            box-shadow:
+                0 22px 55px rgba(212,175,55,.25);
+        }
+
+        .secondary-btn {
+            color: #dedede;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.045);
+            backdrop-filter: blur(15px);
+        }
+
+        .secondary-btn:hover {
+            color: var(--gold-light);
+            border-color: rgba(212,175,55,.3);
+            background: rgba(212,175,55,.06);
+            transform: translateY(-4px);
+        }
+
+        /* =========================
+           3D CARD
+        ========================= */
+
+        .hero-card-wrap {
+            margin: 55px auto 0;
+            perspective: 1000px;
+            max-width: 730px;
+        }
+
+        .hero-card {
+            position: relative;
+            padding: 1px;
+
+            border-radius: 25px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(212,175,55,.45),
+                    rgba(255,255,255,.05),
+                    rgba(212,175,55,.12)
+                );
+
+            transform: rotateX(3deg);
+
+            box-shadow:
+                0 40px 100px rgba(0,0,0,.55),
+                0 0 70px rgba(212,175,55,.055);
+
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%,100% {
+                transform: rotateX(3deg) translateY(0);
+            }
+
+            50% {
+                transform: rotateX(3deg) translateY(-8px);
+            }
+        }
+
+        .card-inner {
+            padding: 22px;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(20,20,20,.96),
+                    rgba(7,7,7,.96)
+                );
+
+            text-align: left;
+        }
+
+        .search-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.035);
+        }
+
+        .search-icon {
+            color: var(--gold);
+            font-size: 20px;
+        }
+
+        .search-text {
+            color: #707070;
+            font-size: 14px;
+        }
+
+        .preview-results {
+            margin-top: 14px;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .preview-item {
+            padding: 16px;
+
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.055);
+
+            background: rgba(255,255,255,.025);
+        }
+
+        .preview-line {
+            height: 7px;
+            border-radius: 20px;
+            background: rgba(212,175,55,.14);
+            margin-bottom: 9px;
+        }
+
+        .preview-line.short {
+            width: 60%;
+            background: rgba(255,255,255,.07);
+        }
+
+        /* =========================
+           FEATURES
+        ========================= */
+
+        .section {
+            width: min(1100px, calc(100% - 30px));
+            margin: 80px auto 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .section-label {
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            margin-top: 12px;
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(24px, 4vw, 38px);
+            letter-spacing: -1px;
+        }
+
+        .section-description {
+            margin: 13px auto 0;
+            max-width: 580px;
+            color: #858585;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .feature {
+            position: relative;
+            overflow: hidden;
+
+            padding: 27px;
+
+            min-height: 205px;
+
+            border: 1px solid rgba(255,255,255,.075);
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,.055),
+                    rgba(255,255,255,.018)
+                );
+
+            backdrop-filter: blur(20px);
+
+            box-shadow:
+                0 20px 60px rgba(0,0,0,.25),
+                inset 0 1px rgba(255,255,255,.035);
+
+            transition: .35s ease;
+        }
+
+        .feature::before {
+            content: "";
+            position: absolute;
+
+            width: 120px;
+            height: 120px;
+
+            right: -50px;
+            top: -50px;
+
+            border-radius: 50%;
+
+            background: rgba(212,175,55,.08);
+            filter: blur(30px);
+        }
+
+        .feature:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212,175,55,.25);
+
+            box-shadow:
+                0 30px 80px rgba(0,0,0,.45),
+                0 0 35px rgba(212,175,55,.05);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 14px;
+
+            color: var(--gold);
+            font-size: 21px;
+
+            background: rgba(212,175,55,.075);
+            border: 1px solid rgba(212,175,55,.15);
+        }
+
+        .feature h3 {
+            margin-top: 20px;
+            font-size: 17px;
+        }
+
+        .feature p {
+            margin-top: 9px;
+            color: #7f7f7f;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           CTA
+        ========================= */
+
+        .cta {
+            position: relative;
+            overflow: hidden;
+
+            margin-top: 90px;
+            padding: 60px 30px;
+
+            text-align: center;
+
+            border: 1px solid rgba(212,175,55,.15);
+            border-radius: 28px;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(212,175,55,.09),
+                    transparent 60%
+                ),
+                rgba(255,255,255,.025);
+
+            box-shadow:
+                0 30px 100px rgba(0,0,0,.35),
+                inset 0 1px rgba(255,255,255,.04);
+        }
+
+        .cta h2 {
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(24px, 5vw, 38px);
+        }
+
+        .cta p {
+            max-width: 550px;
+            margin: 15px auto 27px;
+            color: #898989;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            width: min(1100px, calc(100% - 30px));
+            margin: 60px auto 25px;
+
+            padding-top: 25px;
+
+            border-top: 1px solid rgba(255,255,255,.07);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            color: #656565;
+            font-size: 12px;
+        }
+
+        .footer-logo {
+            color: #999;
+            font-family: "Orbitron", sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .footer-logo span {
+            color: var(--gold);
+        }
+
+        /* =========================
+           LOGGED USER
+        ========================= */
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            padding: 8px 12px;
+
+            border-radius: 12px;
+            border: 1px solid rgba(212,175,55,.15);
+            background: rgba(212,175,55,.045);
+
+            color: #c9c9c9;
+            font-size: 12px;
+        }
+
+        .user-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #d4af37;
+            box-shadow: 0 0 10px rgba(212,175,55,.7);
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 800px) {
+
+            .navbar {
+                min-height: 65px;
+                padding: 10px 12px;
+                border-radius: 18px;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 75px;
+                left: 0;
+                right: 0;
+
+                padding: 12px;
+
+                flex-direction: column;
+                align-items: stretch;
+
+                border-radius: 18px;
+                border: 1px solid rgba(212,175,55,.15);
+
+                background: rgba(8,8,8,.96);
+                backdrop-filter: blur(25px);
+
+                box-shadow: 0 30px 80px rgba(0,0,0,.65);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-link,
+            .nav-button {
+                text-align: center;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .hero {
+                min-height: auto;
+            }
+
+            .hero-content {
+                padding: 85px 0 50px;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            .hero-description {
+                font-size: 15px;
+            }
+
+            .preview-results {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .feature {
+                min-height: auto;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 450px) {
+
+            .logo-text {
+                font-size: 14px;
+            }
+
+            .logo-icon {
+                width: 39px;
+                height: 39px;
+                border-radius: 12px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .primary-btn,
+            .secondary-btn {
+                width: 100%;
+            }
+
+            .hero-card-wrap {
+                margin-top: 35px;
+            }
+
+            .card-inner {
+                padding: 14px;
+            }
+
+            .section {
+                margin-top: 65px;
+            }
+
+            .cta {
+                margin-top: 65px;
+                padding: 45px 20px;
+            }
+        }
+
+        /* =========================
+           SCROLLBAR
+        ========================= */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #030303;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3018;
+            border-radius: 20px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #66511f;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="background">
+    <div class="grid"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+</div>
+
+
+<!-- =========================
+     NAVBAR
+========================= -->
+
+<nav class="navbar">
+
+    <a href="{{ url_for('index') }}" class="logo">
+
+        <div class="logo-icon">
+            DS
+        </div>
+
+        <div class="logo-text">
+            DARK<span>SEARCH</span>
+        </div>
+
+    </a>
+
+
+    <button class="mobile-menu" onclick="toggleMenu()">
+        ☰
+    </button>
+
+
+    <div class="nav-links" id="navLinks">
+
+        <a href="{{ url_for('index') }}" class="nav-link">
+            მთავარი
+        </a>
+
+        {% if user %}
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                პანელი
+            </a>
+
+            <a href="{{ url_for('search_page') }}" class="nav-link">
+                ძიება
+            </a>
+
+            <a href="{{ url_for('purchase_page') }}" class="nav-link">
+                კრედიტები
+            </a>
+
+            {% if user.is_admin %}
+                <a href="{{ url_for('admin_page') }}" class="nav-link">
+                    Admin
+                </a>
+            {% endif %}
+
+            <div class="user-pill">
+                <span class="user-dot"></span>
+                {{ user.username }}
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="nav-button">
+                გასვლა
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('login') }}" class="nav-link">
+                შესვლა
+            </a>
+
+            <a href="{{ url_for('register') }}" class="nav-button">
+                რეგისტრაცია
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</nav>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<main>
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="badge">
+                <span class="badge-dot"></span>
+                SECURE SEARCH PLATFORM
+            </div>
+
+
+            <h1>
+                DARK
+                <span>SEARCH</span>
+            </h1>
+
+
+            <p class="hero-description">
+                თანამედროვე, დაცული და სწრაფი საძიებო პლატფორმა
+                ავტორიზებული მომხმარებლებისთვის.
+                მართე ძიებები, კრედიტები და ანგარიშის აქტივობა
+                ერთ დახვეწილ სისტემაში.
+            </p>
+
+
+            <div class="hero-buttons">
+
+                {% if user %}
+
+                    <a href="{{ url_for('search_page') }}"
+                       class="primary-btn">
+                        დაიწყე ძიება
+                    </a>
+
+                    <a href="{{ url_for('dashboard') }}"
+                       class="secondary-btn">
+                        გახსენი პანელი
+                    </a>
+
+                {% else %}
+
+                    <a href="{{ url_for('register') }}"
+                       class="primary-btn">
+                        შექმენი ანგარიში
+                    </a>
+
+                    <a href="{{ url_for('login') }}"
+                       class="secondary-btn">
+                        უკვე მაქვს ანგარიში
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- 3D SEARCH PREVIEW -->
+
+            <div class="hero-card-wrap">
+
+                <div class="hero-card">
+
+                    <div class="card-inner">
+
+                        <div class="search-preview">
+
+                            <div class="search-icon">
+                                ⌕
+                            </div>
+
+                            <div class="search-text">
+                                ავტორიზებული საძიებო სისტემა...
+                            </div>
+
+                        </div>
+
+
+                        <div class="preview-results">
+
+                            <div class="preview-item">
+
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+
+                            </div>
+
+                            <div class="preview-item">
+
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+
+                            </div>
+
+                            <div class="preview-item">
+
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FEATURES
+    ========================= -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <div class="section-label">
+                PLATFORM
+            </div>
+
+            <h2 class="section-title">
+                ერთი სივრცე. სრული კონტროლი.
+            </h2>
+
+            <p class="section-description">
+                სისტემა შექმნილია ავტორიზებული მომხმარებლებისთვის,
+                ანგარიშების, კრედიტებისა და ძიების პროცესის
+                ერთიანად სამართავად.
+            </p>
+
+        </div>
+
+
+        <div class="features">
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    ⌕
+                </div>
+
+                <h3>
+                    სწრაფი ძიება
+                </h3>
+
+                <p>
+                    ინტერფეისი შექმნილია დიდი მოცულობის
+                    მონაცემებთან მუშაობისთვის და შედეგების
+                    მოსახერხებლად სანახავად.
+                </p>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    ◈
+                </div>
+
+                <h3>
+                    დაცული ანგარიშები
+                </h3>
+
+                <p>
+                    მომხმარებლები შედიან ინდივიდუალური
+                    ანგარიშით, ხოლო პაროლები სისტემაში
+                    ჰეშირებული სახით ინახება.
+                </p>
+
+            </div>
+
+
+            <div class="feature">
+
+                <div class="feature-icon">
+                    ◆
+                </div>
+
+                <h3>
+                    კრედიტების სისტემა
+                </h3>
+
+                <p>
+                    ძიებების რაოდენობა შეიძლება იმართებოდეს
+                    კრედიტების სისტემით და ადმინისტრატორის
+                    მიერ დამუშავებული მოთხოვნებით.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CTA
+    ========================= -->
+
+    <section class="section">
+
+        <div class="cta">
+
+            {% if user %}
+
+                <h2>
+                    მზად ხარ დასაწყებად?
+                </h2>
+
+                <p>
+                    გადადი საძიებო პანელში და გააგრძელე
+                    მუშაობა შენი ავტორიზებული ანგარიშიდან.
+                </p>
+
+                <a href="{{ url_for('search_page') }}"
+                   class="primary-btn">
+                    საძიებო პანელი
+                </a>
+
+            {% else %}
+
+                <h2>
+                    შექმენი შენი ანგარიში
+                </h2>
+
+                <p>
+                    რეგისტრაციის შემდეგ შეძლებ შეხვიდე
+                    საკუთარ პანელში და გამოიყენო სისტემის
+                    ხელმისაწვდომი ფუნქციები.
+                </p>
+
+                <a href="{{ url_for('register') }}"
+                   class="primary-btn">
+                    რეგისტრაცია
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div class="footer-logo">
+        DARK<span>SEARCH</span>
+    </div>
+
+    <div>
+        © 2026 DarkSearch • Secure Platform
+    </div>
+
+</footer>
+
+
+<script>
+
+    function toggleMenu() {
+
+        const menu = document.getElementById("navLinks");
+
+        menu.classList.toggle("active");
+
+    }
+
+
+    // Close mobile menu after clicking a link
+
+    document.querySelectorAll(".nav-links a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+            document
+                .getElementById("navLinks")
+                .classList.remove("active");
+
+        });
+
+    });
+
+
+    // Subtle mouse 3D effect
+
+    const card = document.querySelector(".hero-card");
+
+    if (card && window.innerWidth > 800) {
+
+        document.addEventListener("mousemove", (event) => {
+
+            const x = (window.innerWidth / 2 - event.clientX) / 100;
+            const y = (window.innerHeight / 2 - event.clientY) / 100;
+
+            card.style.transform =
+                `rotateX(${3 + y}deg) rotateY(${-x}deg)`;
+
+        });
+
+    }
+
+</script>
+
+</body>
+</html>
