@@ -1187,9 +1187,7 @@
         try {
 
             const response =
-                await fetch(
-                    "{{ url_for('api_notifications') }}"
-                );
+                await fetch("{{ url_for('api_notifications') }}")
 
             const data =
                 await response.json();
